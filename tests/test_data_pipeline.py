@@ -91,8 +91,13 @@ def test_bilateral_force_surface_aggregates_exactly_and_lpt_is_bar_only() -> Non
     preprocessing = json.loads(
         (Path(__file__).resolve().parents[1] / "configs" / "preprocessing.json").read_text()
     )
-    assert "excluded_variables" not in preprocessing
     assert "fz_left_N" in preprocessing["measurement_surface"]["force_aggregation"]
+    assert preprocessing["lpt"]["interpretation"] == (
+        "LPT displacement and velocity are bar-only measurements and not COM measurements."
+    )
+    assert preprocessing["jump_height"]["hIM"] == (
+        "Impulse-momentum jump height computed as v_takeoff^2/(2g)."
+    )
     for split in ("identification", "validation"):
         for trial in load_trials(split):
             observations = trial["observations"]

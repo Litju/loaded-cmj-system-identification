@@ -191,8 +191,7 @@ validity, subject-specific physiological inference, or muscle-level physiology.
 The identified parameters have meaning within this MuJoCo plant and its
 measurement model.
 
-This release does not perform force-velocity profiling and does not estimate
-F0, V0, Pmax, or an F-V slope.
+This release does not perform force-velocity profiling.
 
 ## Asset provenance and license
 
