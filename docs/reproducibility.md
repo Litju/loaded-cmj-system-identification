@@ -47,8 +47,7 @@ python examples/simulate.py
 python examples/identify.py
 python examples/validate.py
 python tools/generate_dataset.py --output-dir /tmp/loaded-cmj-generated
-python examples/plot_observables.py
-python examples/render.py
+python examples/generate_media_suite.py
 ```
 
 The first four commands exercise installation, tests, forward simulation,
@@ -110,6 +109,8 @@ equivalence claim.
   deterministic source/target execution. Different MuJoCo builds, CPU
   instruction paths, or altered compiler settings should be reported with the
   actual observed tolerances rather than silently rounded to zero.
-- Generated PNGs and MP4s are derived artifacts. Their provenance is recorded
-  in `media/render_provenance.json` for the rendered presentation; the plotting
-  script itself uses one authoritative rollout for all figures.
+- Generated PNGs and MP4s are derived artifacts. Their scenario-specific
+  provenance is recorded in each `media/<scenario>/render_provenance.json`,
+  with the complete media inventory and lineage summarized in
+  `media/MANIFEST.json`. The suite uses one authoritative production rollout
+  for all figures and the matching render.

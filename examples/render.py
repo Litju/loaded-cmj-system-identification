@@ -12,8 +12,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 if __name__ == "__main__":
     raise SystemExit(render_main([
-        "--output-dir", str(ROOT / "media"),
+        "--output-dir", str(ROOT / "media" / "20kg_nominal_a"),
         "--params", str(ROOT / "configs" / "synthetic_reference.json"),
-        "--output-file", str(ROOT / "media" / "loaded_cmj_demo.mp4"),
+        "--output-file", str(ROOT / "media" / "20kg_nominal_a" / "render.mp4"),
+        "--trial-id", "20kg_nominal_a",
+        "--trial-split", "identification",
     ]))
-

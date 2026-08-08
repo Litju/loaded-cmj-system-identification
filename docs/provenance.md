@@ -11,6 +11,29 @@ repository paths adapted to `assets/`, `configs/`, and `src/loaded_cmj/`. The
 MJCF and parameter schema remain the authority for morphology, topology,
 physical arrays, names, units, bounds, and ordering.
 
+## Public study identity and evidence roles
+
+The public release is a fixed-20 kg loaded CMJ system-identification study. The
+model is a synthetic rigid-body multibody abstraction. The committed source
+MJCF/plant snapshot is the direct model authority; the public parameter values,
+phase controller, contact settings, measurement noise, and bilateral alpha are
+first-party engineering or synthetic choices recorded in the repository. No
+external paper is presented as the source of those numerical values.
+
+| Evidence item | Role | Boundary |
+| --- | --- | --- |
+| Committed source MJCF and direct plant port | `DIRECT_MODEL_BASIS` | Authority for morphology, contacts, actuators, integration, and telemetry semantics |
+| `configs/param_schema.json` and named configurations | `PARAMETER_SOURCE` | First-party parameter contract and synthetic reference values; not a literature-derived subject model |
+| `configs/preprocessing.json` and `src/loaded_cmj/measurements.py` | `MEASUREMENT_METHOD_SOURCE` | Source-defined force-platform and bar/LPT transformation and units |
+| Deterministic mechanics/tests and `data/validation_trials.json` | `VALIDATION_SOURCE` | Internal computational qualification, not human validation |
+| MuJoCo documentation | `SOFTWARE_OR_ASSET` | Software implementation and rendering reference |
+| MakeHuman Community documentation | `SOFTWARE_OR_ASSET` | Visual asset and license pathway only |
+| Briceno and Paul (2019) | `METHODS_BACKGROUND` | MakeHuman framework background only; not model-parameter provenance |
+
+The six conditions, alpha pilot rule, seeds, same-load validation design, and
+rendering outputs are synthetic engineering assumptions. They are explicitly
+identified as such rather than assigned generic literature support.
+
 The MakeHuman visual family is preserved under
 `assets/makehuman_cmj_visual/`. Its CC0 notice, export provenance, modification
 record, copied-file manifest, mesh segments, native skin scene, bone mapping,
@@ -33,8 +56,10 @@ bar/LPT channels, contact states, and event timing.
 - `assets/makehuman_cmj_visual/LICENSE_CC0.txt`: asset-family license notice;
 - `assets/makehuman_cmj_visual/PROVENANCE.md`, `MODIFICATIONS.md`, and
   `FILES_COPIED.md`: visual asset lineage and changes;
-- `media/render_provenance.json`: renderer artifact metadata and sampling
-  record.
+- `media/MANIFEST.json`: scenario-level media inventory, trial identity, and
+  derived-artifact hashes;
+- `media/<scenario>/render_provenance.json`: renderer artifact metadata and
+  sampling record for the matching production trial.
 
 The source checkout is not vendored into the target and is not modified by the
 equivalence audit.

@@ -2531,6 +2531,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--duration-sec", type=float)
     parser.add_argument("--output-file", type=Path)
     parser.add_argument("--telemetry-json", type=Path)
+    parser.add_argument("--trial-id", help="checked-in public trial identifier")
+    parser.add_argument(
+        "--trial-split",
+        choices=("identification", "validation"),
+        default="identification",
+        help="dataset split containing --trial-id",
+    )
     args = parser.parse_args(argv)
 
     if args.width <= 0 or args.height <= 0:
@@ -2554,7 +2561,13 @@ def main(argv: list[str] | None = None) -> int:
             f"parameter configuration does not exist: {params_path}"
         )
     params = plant.load_params(params_path)
-    trial = plant._default_trial(None)
+    if args.trial_id is None:
+        trial = plant._default_trial(None)
+    else:
+        from loaded_cmj.dataset import load_trial
+
+        trial = load_trial(args.trial_id, split=args.trial_split)
+        trial = plant._default_trial(trial)
 
     dt = float(plant.DT)
     settle_steps = int(round(float(plant.SETTLE_DURATION_S) / dt))
@@ -2808,6 +2821,20 @@ def main(argv: list[str] | None = None) -> int:
         "render_only": True,
     }
     provenance = {
+        "trial_id": str(trial.get("trial_id", "unspecified")),
+        "trial_split": str(args.trial_split),
+        "external_load_kg": float(trial["external_load_kg"]),
+        "drive_asymmetry_alpha": float(trial.get("drive_asymmetry_alpha", 0.0)),
+        "events": {
+            key: (None if value is None else float(value))
+            for key, value in events.items()
+            if key.endswith("_time_s")
+        },
+        "summary": {
+            key: float(value)
+            for key, value in summary.items()
+            if isinstance(value, (int, float))
+        },
         "qpos_trace_available": True,
         "qvel_trace_available": True,
         "rendered_frame_count": rendered_frame_count,

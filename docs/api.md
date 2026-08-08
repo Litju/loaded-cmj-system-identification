@@ -103,20 +103,23 @@ source comparison grid, and declared noise model as the checked-in experiment.
 
 ## Rendering
 
-The supported command-line wrapper is:
+The supported production command generates one self-contained media bundle for
+each frozen scenario, including its render, preview, and canonical plots:
 
 ```bash
-python examples/render.py
+python examples/generate_media_suite.py
 ```
 
-For direct control, the installed console script accepts the same renderer
-arguments:
+For focused renderer work, the installed console script still accepts the same
+renderer arguments. Give it an explicit scenario output and trial identity:
 
 ```bash
 loaded-cmj-render \
-  --output-dir media \
+  --output-dir media/20kg_nominal_a \
   --params configs/synthetic_reference.json \
-  --output-file media/loaded_cmj_demo.mp4
+  --trial-id 20kg_nominal_a \
+  --trial-split identification \
+  --output-file media/20kg_nominal_a/render.mp4
 ```
 
 Rendering is a presentation operation over a recorded plant rollout. The

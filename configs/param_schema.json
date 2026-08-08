@@ -95,12 +95,14 @@
     "braking_gain": {
       "type": "number",
       "minimum": 0.39,
-      "maximum": 2.65
+      "maximum": 2.65,
+      "units": "dimensionless"
     },
     "propulsive_gain": {
       "type": "number",
       "minimum": 1.3,
-      "maximum": 2.18
+      "maximum": 2.18,
+      "units": "dimensionless"
     },
     "activation_delay_s": {
       "type": "number",
@@ -159,17 +161,20 @@
     "force_plate_scale": {
       "type": "number",
       "minimum": 0.97,
-      "maximum": 1.048
+      "maximum": 1.048,
+      "units": "dimensionless"
     },
     "encoder_scale": {
       "type": "number",
       "minimum": 0.95,
-      "maximum": 1.032
+      "maximum": 1.032,
+      "units": "dimensionless"
     },
     "encoder_delay_steps": {
       "type": "integer",
       "minimum": 0,
-      "maximum": 4
+      "maximum": 4,
+      "units": "samples"
     },
     "encoder_filter_tau_s": {
       "type": "number",

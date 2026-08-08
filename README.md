@@ -18,31 +18,33 @@ authority. The public modules provide ordinary parameter loading, simulation,
 measurement preprocessing, bounded fitting, validation, dataset generation, and
 rendering entry points around that plant.
 
-## Demo
+## Media suite
 
-The intended presentation output is `media/loaded_cmj_demo.mp4`, with a static
-observable comparison in `media/observable_fit.png` when generated locally.
-The qualified bilateral condition is shown in
-`media/bilateral_force_asymmetry.png`, with left/right force traces in N,
-event markers, and direct side-specific impulses in N·s.
-`python examples/plot_observables.py` also writes separated dark-background
-figures for force-platform metrics, global/foot/joint kinematics, contact
-mechanics, phase timing, and scalar summaries, plus one single-axes combined
-figure (`media/combined_grf_com_lpt.png`) for GRFs, COM-z, LPT velocity, and
-LPT displacement. That figure uses separate native-unit y-axes so no channel
-is normalized or hidden by the force scale.
-Those are derived artifacts from the committed source plant; the renderer is
-wired to the approved MakeHuman visual asset family, external bar, bilateral
-force plates, force/LPT traces, event markers, phase labels, and mechanics
-diagnostics.
+The authoritative presentation outputs are scenario-centric: each frozen
+public trial has one directory containing its production 1280×720 MakeHuman
+render, preview, complete static plot family, and render provenance. The
+machine-readable index is [`media/MANIFEST.json`](media/MANIFEST.json).
 
-[![Static preview](media/preview.png)](media/loaded_cmj_demo.mp4)
+[![Nominal A preview](media/20kg_nominal_a/preview.png)](media/20kg_nominal_a/render.mp4)
 
-- [Open the rendered MP4](media/loaded_cmj_demo.mp4)
-- [Open the combined native-unit GRF/COM/LPT plot](media/combined_grf_com_lpt.png)
-- [Open the observable fit plot](media/observable_fit.png)
-- [Open the bilateral force qualification figure](media/bilateral_force_asymmetry.png)
-- [Read the visualization contract](docs/visualization.md)
+Nominal A is the representative hero because it shows the fixed-load experiment
+without emphasizing a perturbation. The same full-fidelity renderer and native-
+unit analysis are available for every qualified condition:
+
+| Scenario | Condition | Media bundle |
+| --- | --- | --- |
+| Nominal A | reference | [`20kg_nominal_a/`](media/20kg_nominal_a/) |
+| Nominal B | independent measurement realization | [`20kg_nominal_b/`](media/20kg_nominal_b/) |
+| Depth | countermovement-depth perturbation | [`20kg_depth/`](media/20kg_depth/) |
+| Timing | phase-timing perturbation | [`20kg_timing/`](media/20kg_timing/) |
+| Depth + Timing | combined same-load perturbation | [`20kg_depth_timing/`](media/20kg_depth_timing/) |
+| Bilateral asymmetry | synthetic inter-limb drive excitation | [`20kg_bilateral_asymmetry/`](media/20kg_bilateral_asymmetry/) |
+
+Cross-scenario figures are in [`media/comparison/`](media/comparison/). The
+combined GRF/COM/LPT figure keeps force, COM, and bar/LPT channels in their
+native units using separate axes; the LPT channels remain bar measurements, not
+COM measurements. Read the [visualization contract](docs/visualization.md) for
+the plot-family and render-lineage details.
 
 ## Public experiment
 
@@ -131,12 +133,11 @@ python -m pytest
 python examples/simulate.py
 python examples/identify.py
 python examples/validate.py
-python examples/plot_observables.py
-python examples/render.py
+python examples/generate_media_suite.py
 ```
 
-Rendering requires an `ffmpeg` executable and a MuJoCo OpenGL backend. The
-renderer writes 1280×720 H.264 MP4 output at 30 fps by default.
+Media generation requires an `ffmpeg` executable and a MuJoCo OpenGL backend.
+It writes one 1280×720 H.264 MP4 at 30 fps for each qualified public scenario.
 
 For the complete fresh-environment procedure, expected qualification evidence,
 and the optional source-vs-target audit, see

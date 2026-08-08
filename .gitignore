@@ -13,8 +13,8 @@ dist/
 # Scratch outputs from regeneration and rendering audits.
 rendering_work/
 media/*.json
+!media/MANIFEST.json
 media/*.log
 media/frames/
 media/.params*
 data/generated/
-

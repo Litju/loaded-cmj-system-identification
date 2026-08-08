@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 from pathlib import Path
 
@@ -15,7 +16,6 @@ from loaded_cmj.dataset import load_trial
 
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT / "media" / "bilateral_force_asymmetry.png"
 
 
 def _event_time(trial: dict, key: str) -> float:
@@ -25,7 +25,16 @@ def _event_time(trial: dict, key: str) -> float:
     return float(value)
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description="Write the physical bilateral force qualification figure.")
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=ROOT / "media" / "20kg_bilateral_asymmetry" / "bilateral_force_asymmetry.png",
+    )
+    args = parser.parse_args(argv)
+    output = args.output
+    output.parent.mkdir(parents=True, exist_ok=True)
     nominal = load_trial("20kg_nominal_a", split="identification")
     asymmetry = load_trial("20kg_bilateral_asymmetry", split="identification")
     nominal_obs = nominal["observations"]
@@ -78,7 +87,7 @@ def main() -> None:
         pad=10,
     )
     force_ax.set_ylabel("Vertical force (N)", color="#d7dde8")
-    force_ax.legend(loc="upper right", ncol=2, frameon=False, fontsize=8.5, labelcolor="#d7dde8")
+    force_ax.legend(loc="upper left", ncol=2, frameon=False, fontsize=8.5, labelcolor="#d7dde8")
     force_ax.set_xlim(float(time_s[0]), float(time_s[-1]))
 
     bilateral = asymmetry["bilateral_measurements"]
@@ -98,11 +107,11 @@ def main() -> None:
         loc="left",
         pad=7,
     )
-    impulse_ax.legend(frameon=False, fontsize=8.5, labelcolor="#d7dde8", loc="upper right")
+    impulse_ax.legend(frameon=False, fontsize=8.5, labelcolor="#d7dde8", loc="upper left")
 
-    fig.savefig(OUTPUT, dpi=180, facecolor=fig.get_facecolor())
+    fig.savefig(output, dpi=180, facecolor=fig.get_facecolor())
     plt.close(fig)
-    print(json.dumps({"output": str(OUTPUT), "resolution": "1980x1224", "alpha": 0.02}))
+    print(json.dumps({"output": str(output), "resolution": "1980x1224", "alpha": 0.02}))
 
 
 if __name__ == "__main__":

@@ -6,10 +6,10 @@ message: "If you use this software, please cite this version."
 type: software
 version: 0.1.0
 abstract: >-
-  Full-morphology MuJoCo loaded countermovement-jump system identification with
-  bilateral force-platform measurements, a bar-mounted linear-position
-  transducer model, deterministic synthetic trials, mechanics-first validation,
-  and MakeHuman scientific visualization.
+  Loaded CMJ System Identification in MuJoCo: a fixed-20-kg, full-morphology
+  mechanics-first system-identification study with bilateral force-platform
+  measurements, bar-mounted linear-position transducer kinematics, deterministic
+  synthetic trials, validation, and MakeHuman scientific visualization.
 authors:
   - name: "Loaded CMJ research contributors"
 license: Apache-2.0

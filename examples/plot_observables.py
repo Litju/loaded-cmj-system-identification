@@ -9,6 +9,7 @@ the rollout.
 
 from __future__ import annotations
 
+import argparse
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -27,6 +28,8 @@ from loaded_cmj.simulation import simulate_trial
 
 ROOT = Path(__file__).resolve().parents[1]
 MEDIA = ROOT / "media"
+OUTPUT_DIR = MEDIA
+SCENARIO_ID = "20kg_nominal_a"
 
 # High-contrast dark scientific dashboard palette.  The two signal sources are
 # intentionally fixed across every figure: observed = light blue, MuJoCo =
@@ -102,7 +105,7 @@ def _legend(
     *,
     ncol: int = 1,
     outside: bool = False,
-    loc: str = "upper right",
+    loc: str = "upper left",
 ) -> None:
     kwargs = {
         "loc": loc,
@@ -261,7 +264,17 @@ def _prepare_axis(ax: Any, result: dict[str, Any], *, labels: bool = False) -> N
 
 
 def _finish(fig: Any, filename: str) -> None:
-    fig.savefig(MEDIA / filename, dpi=170, facecolor=BACKGROUND, edgecolor=BACKGROUND)
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    fig.text(
+        0.995,
+        0.004,
+        f"{SCENARIO_ID} | fixed 20 kg | production rollout",
+        ha="right",
+        va="bottom",
+        color=MUTED,
+        fontsize=7,
+    )
+    fig.savefig(OUTPUT_DIR / filename, dpi=170, facecolor=BACKGROUND, edgecolor=BACKGROUND)
     plt.close(fig)
 
 
@@ -282,6 +295,8 @@ def _combined_measurements(result: dict[str, Any], observed: dict[str, Any]) -> 
     _plot_mujoco(axes[0], time_s, traces["fz_left_N"], "MuJoCo left Fz", linestyle="--", alpha=0.72, color=MUJOCO)
     _plot_mujoco(axes[0], time_s, traces["fz_right_N"], "MuJoCo right Fz", linestyle=":", alpha=0.72, color=GRF_RIGHT_AMBER)
     _plot_mujoco(axes[0], time_s, traces["fz_total_N"], "MuJoCo total Fz", color=GRF_TOTAL_RED)
+    _plot_observed(axes[0], observed_time, observed["fz_left_N"], "observed left Fz", color="#b7efff", linewidth=1.05)
+    _plot_observed(axes[0], observed_time, observed["fz_right_N"], "observed right Fz", color="#ffd39a", linewidth=1.05)
     _plot_observed(axes[0], observed_time, observed["fz_total_N"], "observed total Fz", color=OBSERVED)
     _style_axis(axes[0], "Bilateral force-platform signal", "force (N)")
     _legend(axes[0], ncol=2)
@@ -408,7 +423,7 @@ def _combined_grf_com_lpt(result: dict[str, Any], observed: dict[str, Any]) -> N
     _finish(fig, "combined_grf_com_lpt.png")
 
 
-def _force_plate_metrics(result: dict[str, Any]) -> None:
+def _force_plate_metrics(result: dict[str, Any], observed: dict[str, Any]) -> None:
     time_s, traces = _time_values(result)
     fig, axes = plt.subplots(4, 1, figsize=(13, 11.5), sharex=True, constrained_layout=True)
     fig.suptitle("Loaded CMJ force-platform metrics", color=TEXT, fontsize=14, fontweight="bold")
@@ -418,6 +433,10 @@ def _force_plate_metrics(result: dict[str, Any]) -> None:
     _plot_mujoco(axes[0], time_s, traces["fz_right_N"], "MuJoCo right plate", linestyle=":", alpha=0.72, color=GRF_RIGHT_AMBER)
     _plot_mujoco(axes[0], time_s, traces["fz_total_N"], "MuJoCo bilateral total", color=GRF_TOTAL_RED)
     _plot_mujoco(axes[0], time_s, traces["total_fz_N"], "MuJoCo raw contact total", linestyle="-.", alpha=0.68, color=LPT_TETHER_PURPLE)
+    observed_time = [float(value) for value in observed["time_s"]]
+    _plot_observed(axes[0], observed_time, observed["fz_left_N"], "observed left plate", color="#b7efff", linewidth=1.0)
+    _plot_observed(axes[0], observed_time, observed["fz_right_N"], "observed right plate", color="#ffd39a", linewidth=1.0)
+    _plot_observed(axes[0], observed_time, observed["fz_total_N"], "observed bilateral total", color=OBSERVED, linewidth=1.3)
     _style_axis(axes[0], "Bilateral vertical force plates", "force (N)")
     _legend(axes[0], ncol=3)
 
@@ -589,7 +608,7 @@ def _joint_kinematics(result: dict[str, Any]) -> None:
         _legend(
             axes[index],
             ncol=4,
-            loc="lower right" if index == len(groups) - 1 else "upper right",
+            loc="lower right" if index == len(groups) - 1 else "upper left",
         )
     axes[-1].set_xlabel("time (s)", color=TEXT)
     for ax in axes:
@@ -647,7 +666,7 @@ def _phase_events(result: dict[str, Any]) -> None:
     _finish(fig, "phase_events.png")
 
 
-def _summary_metrics(result: dict[str, Any]) -> None:
+def _summary_metrics(result: dict[str, Any], trial: dict[str, Any]) -> None:
     """Render existing scalar summaries/diagnostics without recomputing them."""
 
     fig, ax = plt.subplots(1, 1, figsize=(12, 8), constrained_layout=True)
@@ -659,6 +678,10 @@ def _summary_metrics(result: dict[str, Any]) -> None:
     diagnostics = result.get("diagnostics", {})
     events = result.get("events", {})
     lines = [
+        ("TRIAL", ""),
+        ("trial_id", str(trial.get("trial_id", SCENARIO_ID))),
+        ("external_load_kg", f"{float(trial.get('external_load_kg', 20.0)):.6g}"),
+        ("", ""),
         ("SUMMARY", ""),
         *[(key, f"{float(value):.6g}") for key, value in summary.items()],
         ("", ""),
@@ -670,6 +693,17 @@ def _summary_metrics(result: dict[str, Any]) -> None:
         *[(key, f"{float(value):.6g}") for key, value in diagnostics.items()
           if isinstance(value, (int, float)) and key not in {"used_mujoco"}],
     ]
+    bilateral = trial.get("bilateral_measurements")
+    if bilateral:
+        lines.extend([
+            ("", ""),
+            ("BILATERAL MEASUREMENTS", ""),
+            ("units", str(bilateral.get("units", "N*s"))),
+            ("left_braking_impulse_Ns", f"{float(bilateral['left_braking_impulse_Ns']):.6g}"),
+            ("right_braking_impulse_Ns", f"{float(bilateral['right_braking_impulse_Ns']):.6g}"),
+            ("left_propulsive_impulse_Ns", f"{float(bilateral['left_propulsive_impulse_Ns']):.6g}"),
+            ("right_propulsive_impulse_Ns", f"{float(bilateral['right_propulsive_impulse_Ns']):.6g}"),
+        ])
     split = max(1, len(lines) // 2)
     columns = (lines[:split], lines[split:])
     for col, rows in enumerate(columns):
@@ -694,24 +728,28 @@ def _summary_metrics(result: dict[str, Any]) -> None:
     _finish(fig, "summary_metrics.png")
 
 
-def main() -> None:
+def render_scenario(
+    trial: dict[str, Any],
+    result: dict[str, Any],
+    output_dir: str | Path,
+) -> tuple[str, ...]:
+    """Write the canonical plot family for one already-produced rollout."""
+
+    global OUTPUT_DIR, SCENARIO_ID
+    OUTPUT_DIR = Path(output_dir)
+    SCENARIO_ID = str(trial.get("trial_id", "scenario"))
     _configure_style()
-    MEDIA.mkdir(parents=True, exist_ok=True)
-    trial = load_trial("20kg_nominal_a", split="identification")
-    # One rollout feeds every figure.  No plot invokes simulation a second time.
-    result = simulate_trial(load_named_parameters("synthetic_reference"), trial)
     observed = trial["observations"]
     _combined_measurements(result, observed)
     _combined_grf_com_lpt(result, observed)
-    _force_plate_metrics(result)
+    _force_plate_metrics(result, observed)
     _global_kinematics(result)
     _foot_kinematics(result)
     _joint_kinematics(result)
     _contact_mechanics(result)
     _phase_events(result)
-    _summary_metrics(result)
-    print("Wrote:")
-    for name in (
+    _summary_metrics(result, trial)
+    return (
         "observable_fit.png",
         "combined_grf_com_lpt.png",
         "force_plate_metrics.png",
@@ -721,8 +759,21 @@ def main() -> None:
         "contact_mechanics.png",
         "phase_events.png",
         "summary_metrics.png",
-    ):
-        print(f"  {MEDIA / name}")
+    )
+
+
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description="Generate the canonical plot family for one public CMJ trial.")
+    parser.add_argument("--trial-id", default="20kg_nominal_a")
+    parser.add_argument("--split", choices=("identification", "validation"), default="identification")
+    parser.add_argument("--output-dir", type=Path, default=MEDIA)
+    args = parser.parse_args(argv)
+    trial = load_trial(args.trial_id, split=args.split)
+    result = simulate_trial(load_named_parameters("synthetic_reference"), trial)
+    names = render_scenario(trial, result, args.output_dir)
+    print("Wrote:")
+    for name in names:
+        print(f"  {args.output_dir / name}")
 
 
 if __name__ == "__main__":

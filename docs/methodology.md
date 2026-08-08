@@ -49,6 +49,21 @@ The native trace and comparison observation are different representations of
 the same trial. Resampling does not alter the plant state or replace the
 measurement model.
 
+## Units and uncertainty
+
+The public signal surface uses SI units: force in N, displacement in m,
+velocity in m/s, impulse in N·s, time in s, mass in kg, and angles in rad.
+`configs/param_schema.json` supplies units for every fitted coordinate. The
+model gravity is `g = 9.81 m/s²`; the reported impulse-momentum height is exactly
+`hIM = v_takeoff² / (2g)`, not an optical or flight-height measurement.
+
+The generator's force and bar-noise standard deviations define deterministic
+measurement realizations selected by recorded seeds. They are not empirical
+instrument uncertainty estimates, confidence intervals, or population error
+bars. The release reports deterministic replay error and physical
+left/right differences; it makes no inferential claim from the six synthetic
+conditions.
+
 ## Bounded fitting
 
 `loaded_cmj.identification.identify_parameters` varies explicitly named

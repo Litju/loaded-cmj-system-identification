@@ -15,6 +15,13 @@ forces are reconstructed from `mujoco.mj_contactForce`, rotated into world
 coordinates, and aggregated with the source force-platform sign/magnitude
 semantics for bilateral vertical force telemetry.
 
+The public experiment uses a fixed `external_load_kg = 20.0`. The public
+synthetic reference configuration uses `body_mass_kg = 78.37 kg`; the 75 kg
+value retained in the plant source is the committed morphology's mass-scaling
+reference, not a second public experiment condition. No plant morphology,
+contact geometry, mass/inertia semantics, timestep, or solver setting is
+changed by the publication-scope freeze.
+
 ## State and parameter boundary
 
 The MuJoCo state is authoritative for positions, velocities, contact, bar
@@ -28,6 +35,11 @@ tracking, feed-forward, and trunk-posture stabilization. Passive forefoot/MTP
 articulation remains passive. Observation collection is observationally pure:
 it reads MuJoCo state and contact wrenches without writing `qpos`, `qvel`, or
 external force arrays after initialization.
+
+The qualified bilateral condition is applied after this symmetric six-actuator
+controller in the trial layer: left commands are scaled by `1 + alpha` and
+right commands by `1 - alpha`, with compiled actuator bounds enforced. Alpha is
+a known synthetic excitation and is absent from the fitted parameter vector.
 
 ## Contact and event semantics
 

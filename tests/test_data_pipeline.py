@@ -7,10 +7,10 @@ from pathlib import Path
 import numpy as np
 
 from loaded_cmj.dataset import generate_dataset, load_dataset, load_trial, load_trials
-from loaded_cmj.identification import DEFAULT_FIT_COORDINATES
+from loaded_cmj.identification import DEFAULT_FIT_COORDINATES, identify_parameters
 from loaded_cmj.parameters import default_parameters, load_named_parameters, parameter_schema
 from loaded_cmj.preprocessing import comparison_grid, preprocess_observations
-from loaded_cmj.validation import _physical_metrics
+from loaded_cmj.validation import _physical_metrics, validate_trial
 from loaded_cmj import plant
 
 
@@ -165,12 +165,44 @@ def test_dataset_regeneration_is_deterministic(tmp_path: Path) -> None:
         assert (first / relative).read_bytes() == (second / relative).read_bytes()
 
 
+def test_manifest_hashes_reproduce() -> None:
+    root = Path(__file__).resolve().parents[1]
+    manifest = json.loads((root / "data" / "dataset_manifest.json").read_text())
+    for relative, expected in manifest["generated_file_sha256"].items():
+        assert hashlib.sha256((root / relative).read_bytes()).hexdigest() == expected
+
+
+def test_identification_pipeline_executes_without_rollout_failures() -> None:
+    result = identify_parameters(
+        load_trials("identification")[:1],
+        parameter_names=("encoder_offset_m",),
+        max_nfev=2,
+        residual_sample_count=8,
+    )
+    assert result["rollout_failures"] == 0
+    assert result["parameter_names"] == ["encoder_offset_m"]
+    assert np.isfinite(result["cost"])
+
+
+def test_validation_pipeline_preserves_phase_and_recovery_contract() -> None:
+    result = validate_trial(
+        load_named_parameters("synthetic_reference"),
+        load_trial("20kg_nominal_a", split="identification"),
+    )
+    assert result["valid"] is True
+    assert result["physical"]["mechanics_valid"] is True
+    assert result["predicted_events"]["phase_order_valid"] is True
+    assert result["predicted_events"]["sustained_no_foot_contact"] is True
+    assert result["physical"]["mechanics_gates"]["touchdown_triggered_landing"] is True
+
+
 def test_schema_has_units_and_exact_nominal_keys() -> None:
     schema = parameter_schema()
     nominal = default_parameters()
     assert set(schema["required"]) == set(nominal)
     assert schema["properties"]["body_mass_kg"]["units"] == "kg"
     assert schema["properties"]["bar_attachment_offset_m"]["units"] == "m"
+    assert all("units" in definition for definition in schema["properties"].values())
     assert not any("asymmetry" in name.lower() for name in schema["required"])
 
 
