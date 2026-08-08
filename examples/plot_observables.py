@@ -21,14 +21,18 @@ def main() -> None:
     observed = trial["observations"]
     predicted = result["traces"]
     fig, axes = plt.subplots(2, 1, figsize=(11, 6.5), sharex=True, constrained_layout=True)
-    axes[0].plot(observed["time_s"], observed["fz_total_N"], color="#202020", lw=1.0, label="observed total Fz")
-    axes[0].plot(predicted["time_s"], predicted["fz_total_N"], color="#007f9e", lw=1.2, label="MuJoCo total Fz")
+    axes[0].plot(predicted["time_s"], predicted["fz_total_N"], color="#007f9e", lw=1.2, label="MuJoCo total Fz", zorder=2)
+    axes[0].plot(observed["time_s"], observed["fz_total_N"], color="#202020", lw=1.0,
+                 marker="o", markersize=2.2, markevery=8, markerfacecolor="white",
+                 markeredgewidth=0.6, label="observed total Fz", zorder=3)
     axes[0].set_ylabel("force (N)")
     axes[0].set_title("Bilateral force-platform measurement")
     axes[0].legend(frameon=False)
     axes[0].grid(alpha=0.22)
-    axes[1].plot(observed["time_s"], observed["bar_displacement_m"], color="#202020", lw=1.0, label="observed bar displacement")
-    axes[1].plot(predicted["time_s"], predicted["bar_displacement_m"], color="#c85a00", lw=1.2, label="MuJoCo bar displacement")
+    axes[1].plot(predicted["time_s"], predicted["bar_displacement_m"], color="#c85a00", lw=1.2, label="MuJoCo bar displacement", zorder=2)
+    axes[1].plot(observed["time_s"], observed["bar_displacement_m"], color="#202020", lw=1.0,
+                 marker="o", markersize=2.2, markevery=8, markerfacecolor="white",
+                 markeredgewidth=0.6, label="observed bar displacement", zorder=3)
     axes[1].set_xlabel("time (s)")
     axes[1].set_ylabel("bar displacement (m)")
     axes[1].set_title("Bar/LPT measurement (bar displacement, not COM displacement)")
@@ -42,4 +46,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
