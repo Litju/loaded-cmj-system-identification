@@ -26,9 +26,10 @@ external paper is presented as the source of those numerical values.
 | `configs/param_schema.json` and named configurations | `PARAMETER_SOURCE` | First-party parameter contract and synthetic reference values; not a literature-derived subject model |
 | `configs/preprocessing.json` and `src/loaded_cmj/measurements.py` | `MEASUREMENT_METHOD_SOURCE` | Source-defined force-platform and bar/LPT transformation and units |
 | Deterministic mechanics/tests and `data/validation_trials.json` | `VALIDATION_SOURCE` | Internal computational qualification, not human validation |
-| MuJoCo documentation | `SOFTWARE_OR_ASSET` | Software implementation and rendering reference |
-| MakeHuman Community documentation | `SOFTWARE_OR_ASSET` | Visual asset and license pathway only |
-| Briceno and Paul (2019) | `METHODS_BACKGROUND` | MakeHuman framework background only; not model-parameter provenance |
+| MuJoCo documentation and software paper | `SOFTWARE_ASSET_REFERENCE` | Software implementation, contact, integration, and rendering reference |
+| NumPy and SciPy software papers | `SOFTWARE_ASSET_REFERENCE` | Numerical-array and bounded-optimization software actually used by the target |
+| MakeHuman Community documentation | `SOFTWARE_ASSET_REFERENCE` | Visual asset and license pathway only |
+| Briceno and Paul (2019) | `GENERAL_BACKGROUND` | MakeHuman framework background only; not model-parameter provenance |
 
 The six conditions, alpha pilot rule, seeds, same-load validation design, and
 rendering outputs are synthetic engineering assumptions. They are explicitly
@@ -63,6 +64,12 @@ bar/LPT channels, contact states, and event timing.
 
 The source checkout is not vendored into the target and is not modified by the
 equivalence audit.
+
+The complete two-bundle checksum, conflict-resolution, reference-role, and
+first-party-assumption record is in
+[`docs/evidence/gate9_provenance.md`](evidence/gate9_provenance.md). Both
+bundles were treated as evidence only; primary source code, current target Git
+history, and current validation evidence override stale bundle metadata.
 
 ## MakeHuman citation and acknowledgment
 

@@ -91,9 +91,11 @@ and validate the resulting configuration on the separate validation split.
 
 ```python
 from loaded_cmj.dataset import generate_dataset
+from tempfile import TemporaryDirectory
 
-manifest = generate_dataset(output_dir="/tmp/loaded-cmj-generated")
-print(manifest["generated_file_sha256"])
+with TemporaryDirectory(prefix="loaded-cmj-generated-") as output_dir:
+    manifest = generate_dataset(output_dir=output_dir)
+    print(manifest["generated_file_sha256"])
 ```
 
 The generator is deterministic and writes to a supplied scratch directory when

@@ -37,8 +37,10 @@ fabricated locally:
 - [ ] Confirm the public repository name, versioning policy, and release date.
 - [ ] Reconfirm the retained MakeHuman/CC0 asset records and any additional
   third-party notices at the publication destination.
-- [ ] Run the fresh-environment commands in `docs/reproducibility.md` and
-  attach the final qualification record to the release review.
+- [x] Run the fresh-environment commands in `docs/reproducibility.md` and
+  attach the final qualification record to the release review; the publication
+  freeze recovery passed this qualification with 24 tests passed and one
+  optional source-equivalence test skipped.
 
 The absence of a URL or DOI in the current citation file is deliberate: there
 is no repository to cite yet.

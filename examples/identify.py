@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 from loaded_cmj.dataset import load_trials
 from loaded_cmj.identification import identify_parameters
@@ -28,4 +27,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

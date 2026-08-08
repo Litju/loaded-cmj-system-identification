@@ -4,16 +4,30 @@ This record captures the unmodified target at the start of the 20 kg release
 run. The source authority was inspected only at its committed snapshot; no
 source-worktree changes were used.
 
-- Start head: `b71f6fb62c52fc0cf08d6780610ed4a5b5d86371`
-- Start branch: `master`
+- Start head: `891d987021750f6b6d2a97c0e55b0f2be0548e0c`
+- Start branch: `release/20kg-sysid-v0.1.0`
 - Start worktree: clean
-- Tests: 16 passed, 1 skipped (the optional source-equivalence check)
+- Tests: 23 passed, 1 skipped (the optional source-equivalence check)
 - MuJoCo: 3.11.0
 - Compiled dimensions: `nq=21`, `nv=21`, `nu=6`, `nbody=19`, `njnt=21`,
   `ngeom=28`, `nsite=26`, `ntendon=4`, `nsensor=10`, `npair=6`, `neq=0`
 - Timestep: `0.002 s`
 - Integrator: `mjINT_IMPLICITFAST`
 - Solver: 100 iterations, tolerance `1e-10`, cone `0`
+
+Critical pre-edit fingerprints:
+
+| File | SHA-256 |
+| --- | --- |
+| `assets/loaded_cmj_model.xml` | `54e092b2aefd664af64d1848a7cca0e82d1205156b0c79c00f9dbc70600f87e5` |
+| `src/loaded_cmj/plant.py` | `d4b3184b9cc3342ddbc0b36e6b3ac58bed33a26b9dd32826af950778ae272e4d` |
+| `src/loaded_cmj/parameters.py` | `9df4f3246b05fb66bd4efc778991688bfc5e249710f2216570e1d4a60169b912` |
+| `src/loaded_cmj/preprocessing.py` | `aecfafbdeaa8bc503551fd84d6e655bade9aa0d1a6621b90013a5d7ac606c882` |
+| `src/loaded_cmj/events.py` | `e1650ad7ffb8d43e5cb305d978c19f829f94fc1abf38e22d4f9be4822830e82b` |
+| `src/loaded_cmj/measurements.py` | `2797fc1c4b82e3da759009894dea2ba7e1a8e11524a18e68dc0bfcda2365be4a` |
+| `src/loaded_cmj/model.py` | `297ab7fdb6533c0fe46c601ea4ddb3ee1399f2fbc3326721500605ceeed72b69` |
+| `src/loaded_cmj/simulation.py` | `8f52e86703f92b06e7c677374ddf84259d7d7847d1ba333de623840f8752213c` |
+| `configs/param_schema.json` | `8356d3fd5fc1b74ef1601610525b3e94a35906804619bdf1fb27889cdf927c4f` |
 
 The retained nominal rollout used the source-authoritative synthetic reference
 configuration and `external_load_kg=20.0`. It contained 1,801 native samples

@@ -30,7 +30,8 @@ The generator records SHA-256 hashes in `data/dataset_manifest.json`. Generate
 into a scratch directory for an audit:
 
 ```bash
-python tools/generate_dataset.py --output-dir /tmp/loaded-cmj-generated
+LCMJ_DATASET_OUTPUT_DIR="$(mktemp -d)"
+python tools/generate_dataset.py --output-dir "$LCMJ_DATASET_OUTPUT_DIR"
 ```
 
 Do not use the repository itself as the output directory unless intentionally
@@ -46,7 +47,8 @@ python -m pytest
 python examples/simulate.py
 python examples/identify.py
 python examples/validate.py
-python tools/generate_dataset.py --output-dir /tmp/loaded-cmj-generated
+LCMJ_DATASET_OUTPUT_DIR="$(mktemp -d)"
+python tools/generate_dataset.py --output-dir "$LCMJ_DATASET_OUTPUT_DIR"
 python examples/generate_media_suite.py
 ```
 

@@ -102,7 +102,8 @@ uses the same 2 ms MuJoCo plant, resamples to the source 100 Hz grid, and adds
 the declared observation noise. Use a scratch directory for regeneration:
 
 ```bash
-python tools/generate_dataset.py --output-dir /tmp/loaded-cmj-generated
+LCMJ_DATASET_OUTPUT_DIR="$(mktemp -d)"
+python tools/generate_dataset.py --output-dir "$LCMJ_DATASET_OUTPUT_DIR"
 ```
 
 The checked-in identification and validation trials are ordinary public
