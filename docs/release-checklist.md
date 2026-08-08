@@ -1,10 +1,14 @@
-# Local release checklist
+# Public release checklist
 
 ## Current status
 
-This is a complete local Git checkout for owner review. It is not currently a
-hosted repository and has no remote, DOI, or release page. That status is
-intentional and is not hidden by the documentation.
+Loaded CMJ System Identification is publicly hosted at:
+
+https://github.com/Litju/loaded-cmj-system-identification
+
+The repository identifies the software as version `0.1.0`, includes the
+accountable author in `CITATION.cff`, and publishes the source repository URL.
+No DOI or independent archival identifier is currently assigned.
 
 ## Scientific and engineering checks
 
@@ -18,29 +22,40 @@ intentional and is not hidden by the documentation.
 - [x] Bounded identification and mechanics-first validation are exposed through
   normal research modules.
 - [x] Static figures and the animated renderer use the same target plant.
-- [x] Read-only source/target compiled-model and rollout equivalence tooling is
-  available without adding the source checkout to this tree.
 - [x] Tests cover model integrity, deterministic mechanics, data/preprocessing,
-  and optional source equivalence.
+  validation, and publication-visualization contracts.
 - [x] MakeHuman source/asset acknowledgment, CC0 notice, provenance, and
   scholarly citation are included separately from the Apache-2.0 code license.
+- [x] The publication visualization pass preserves model-versus-observed and
+  left-versus-right trace identity using redundant semantic encoding.
+- [x] Numerical, event, and metric regression checks passed after the final
+  visualization refactor.
+- [x] Final visualization-refactor test suite: 29 passed, 1 optional
+  source-equivalence test skipped.
+- [x] Final worktree qualification reported no plant, physics, dataset,
+  scenario, identification, validation-logic, or metric-calculation changes.
 
-## Owner actions before external publication
+## Public repository identity
 
-These items require owner identity or hosting decisions and must not be
-fabricated locally:
+- [x] Public repository created:
+  `Litju/loaded-cmj-system-identification`.
+- [x] Accountable author recorded as Julio Rodriguez.
+- [x] Repository URL recorded in `CITATION.cff`.
+- [x] Software version recorded as `0.1.0`.
+- [x] Apache-2.0 repository license retained.
+- [x] MakeHuman asset provenance and separate license notice retained.
+- [x] Public documentation no longer represents the project as an unhosted
+  local release candidate.
 
-- [ ] Replace the generic CFF author entry with the accountable author or
-  contributor list.
-- [ ] Add the hosted repository URL to `CITATION.cff` once a repository exists.
-- [ ] Add a DOI or archival identifier only after one has actually been issued.
-- [ ] Confirm the public repository name, versioning policy, and release date.
-- [ ] Reconfirm the retained MakeHuman/CC0 asset records and any additional
-  third-party notices at the publication destination.
-- [x] Run the fresh-environment commands in `docs/reproducibility.md` and
-  attach the final qualification record to the release review; the publication
-  freeze recovery passed this qualification with 24 tests passed and one
-  optional source-equivalence test skipped.
+## Remaining release and archival actions
 
-The absence of a URL or DOI in the current citation file is deliberate: there
-is no repository to cite yet.
+- [ ] Create or verify the annotated `v0.1.0` Git tag.
+- [ ] Create or verify the corresponding GitHub Release.
+- [ ] Add a release date to citation metadata when the release identity is finalized.
+- [ ] Add a DOI or archival identifier only if and when one is actually issued.
+- [ ] Recheck GitHub-rendered README links, media, citation metadata, and release
+  assets after the final documentation commit.
+
+A DOI is not required for the GitHub source release. If an archival identifier
+is assigned later, update `CITATION.cff` and the release documentation in a
+new, traceable commit.

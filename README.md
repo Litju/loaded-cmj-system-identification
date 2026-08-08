@@ -1,8 +1,8 @@
 # Loaded CMJ System Identification
 
-> Local release-candidate status: this checkout is complete for owner review,
-> but it is not currently hosted as a public repository and has no remote, DOI,
-> or release page. Relative links below refer to this local Git checkout.
+> **Public repository — v0.1.0.** This repository hosts the reproducible
+> Loaded CMJ System Identification research-software release. The source
+> repository is public; a DOI or archival identifier has not yet been assigned.
 
 ## Overview
 
@@ -189,8 +189,8 @@ The most useful starting points are:
   provenance;
 - [`docs/reference_map.md`](docs/reference_map.md): citation roles and
   implementation traceability;
-- [`docs/release-checklist.md`](docs/release-checklist.md): owner actions needed
-  once a hosted repository exists.
+- [`docs/release-checklist.md`](docs/release-checklist.md): public-release
+  checks and remaining archival actions.
 
 ## Limitations
 
@@ -217,11 +217,11 @@ The official asset-pack catalog distinguishes CC0 and CC-BY packs; the local
 inventory is an owner-exported core body/eye texture, not a downloaded
 community pack.
 
-The citation file intentionally contains no repository URL or DOI because no
-hosted repository or archival record exists yet. Replace the accountable author
-metadata and add those identifiers only when they are real; see
-[`CITATION.cff`](CITATION.cff) and the
-[`local release checklist`](docs/release-checklist.md).
+Repository citation metadata, including the accountable author and public
+source URL, is provided in [`CITATION.cff`](CITATION.cff). A DOI or archival
+identifier is not currently assigned. See the
+[`public release checklist`](docs/release-checklist.md) for the remaining
+release and archival actions.
 
 ## References
 
