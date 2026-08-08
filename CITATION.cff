@@ -1,11 +1,17 @@
+# This local release candidate intentionally has no repository-code URL or DOI:
+# no hosted repository or archival record exists yet.
 cff-version: 1.2.0
 title: "Loaded CMJ System Identification"
-message: "If you use this repository, please cite the repository and its version."
+message: "If you use this software, please cite this version."
 type: software
 version: 0.1.0
-date-released: 2026-08-07
+abstract: >-
+  Full-morphology MuJoCo loaded countermovement-jump system identification with
+  bilateral force-platform measurements, a bar-mounted linear-position
+  transducer model, deterministic synthetic trials, mechanics-first validation,
+  and MakeHuman scientific visualization.
 authors:
-  - family-names: "Loaded CMJ research contributors"
+  - name: "Loaded CMJ research contributors"
 license: Apache-2.0
 keywords:
   - MuJoCo

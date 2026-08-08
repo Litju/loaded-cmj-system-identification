@@ -1,16 +1,56 @@
 # Measurements
 
-The force-platform pathway reports left and right vertical force, their total,
-and the net force after the weighing baseline is removed. The baseline is the
-mean total vertical force over the final 1.00 s of the 1.50 s weighing interval;
-system mass is `Wsys / 9.81`.
+The measurement path is part of the scientific model, not a rendering helper.
+Its public channel names, units, and transformations are defined by
+`src/loaded_cmj/plant.py`, `src/loaded_cmj/measurements.py`, and
+`configs/preprocessing.json`.
 
-The LPT pathway reports the loaded bar's displacement at the bar LPT site,
-along with its velocity, sensor delay, filtering, scale, and offset. It is a bar
-measurement and is not relabeled as center-of-mass displacement. A separate LPT
-tether force channel is retained for diagnostic accounting.
+## Force-platform channels
 
-The source comparison grid is 0.00–3.60 s inclusive at 0.01 s spacing. Native
-simulation telemetry remains available at the 0.002 s plant timestep for
-mechanics and equivalence audits.
+| Channel | Unit | Meaning |
+| --- | --- | --- |
+| `fz_left_N` | N | Vertical force attributed to the left force-plate region |
+| `fz_right_N` | N | Vertical force attributed to the right force-plate region |
+| `fz_total_N` | N | Bilateral total vertical force |
+| `fnet_N` | N | `fz_total_N - Wsys`, after the source weighing baseline |
+| `total_fz_N` / `total_fx_N` | N | Raw contact-force diagnostics before the canonical measurement transform |
+| `cop_x_m` | m | Force-platform center of pressure; undefined outside contact uses the source sentinel semantics |
 
+The weighing baseline `Wsys` is the mean total vertical force over the final
+1.00 s of the 1.50 s weighing interval. The source system-mass estimate is
+`Wsys / 9.81`; this is a measurement-derived diagnostic, not a replacement for
+the model's configured masses.
+
+## Bar/LPT channels
+
+| Channel | Unit | Meaning |
+| --- | --- | --- |
+| `bar_z_m` | m | MuJoCo bar-site vertical position |
+| `bar_displacement_m` | m | Bar displacement at the LPT site after the source offset/scale/delay/filter path |
+| `bar_velocity_m_s` | m/s | Bar/LPT velocity associated with the source bar-displacement signal |
+| `lpt_tether_force_N` | N | Retained diagnostic force for the LPT tether model |
+
+`bar_displacement_m` is bar displacement. It is not center-of-mass (COM)
+displacement, and the API, fitting residuals, validation reports, plots, and
+renderer labels preserve that distinction. COM traces are separate read-only
+MuJoCo state channels.
+
+## Preprocessing and timing
+
+The source path preserves sensor delay, filtering, scale, offset, force
+baseline, and channel mapping. The comparison grid is 0.00–3.60 s inclusive at
+0.01 s spacing (100 Hz, 361 samples). Linear interpolation onto that grid is
+defined in `configs/preprocessing.json` and `loaded_cmj.preprocessing.resample`.
+
+Native telemetry remains available at the 0.002 s plant timestep for mechanics,
+plots, and source-equivalence audits. The public `preprocess_observations`
+function applies the source weighing/net-force transform and supplies a missing
+observed bar velocity from the observation channel convention when necessary.
+
+## Kinematics available for plotting
+
+The same rollout exposes COM position, root state, anatomical joint positions
+and velocities, foot landmarks/contact, bar-rack coordinates, center of
+pressure, and contact slip diagnostics. These are read-only state/telemetry
+channels; the static plotting example only routes existing fields to separate
+figures. See [`docs/visualization.md`](visualization.md).

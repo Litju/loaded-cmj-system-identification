@@ -1,8 +1,12 @@
 # Loaded CMJ System Identification
 
+> Local release-candidate status: this checkout is complete for owner review,
+> but it is not currently hosted as a public repository and has no remote, DOI,
+> or release page. Relative links below refer to this local Git checkout.
+
 ## Overview
 
-This repository is a public research-engineering port of a full-morphology
+This project is a research-engineering port of a full-morphology
 loaded countermovement-jump (CMJ) system. It couples a linked sagittal human
 model, an externally loaded bar, bilateral force plates, and a bar-mounted
 linear-position transducer (LPT) measurement model in MuJoCo.
@@ -27,6 +31,13 @@ wired to the approved MakeHuman visual asset family, external bar, bilateral
 force plates, force/LPT traces, event markers, phase labels, and mechanics
 diagnostics.
 
+[![Static preview](media/preview.png)](media/loaded_cmj_demo.mp4)
+
+- [Open the rendered MP4](media/loaded_cmj_demo.mp4)
+- [Open the combined native-unit GRF/COM/LPT plot](media/combined_grf_com_lpt.png)
+- [Open the observable fit plot](media/observable_fit.png)
+- [Read the visualization contract](docs/visualization.md)
+
 ## Research question
 
 The synthetic experiment asks how well bounded parameter fitting can recover a
@@ -50,6 +61,11 @@ channel is explicitly the displacement of the loaded bar at the LPT site; it is
 not a center-of-mass displacement measurement. Filtering, delay, scaling,
 offset, the 100 Hz comparison grid, and the weighing/event rules are retained
 in `configs/preprocessing.json` and `src/loaded_cmj/plant.py`.
+
+The measurement definitions and units are documented in
+[`docs/measurements.md`](docs/measurements.md). In particular, a channel named
+`bar_displacement_m` remains bar displacement throughout simulation,
+preprocessing, fitting, validation, and plotting.
 
 ## Parameterization
 
@@ -104,6 +120,13 @@ python examples/render.py
 Rendering requires an `ffmpeg` executable and a MuJoCo OpenGL backend. The
 renderer writes 1280×720 H.264 MP4 output at 30 fps by default.
 
+For the complete fresh-environment procedure, expected qualification evidence,
+and the optional source-vs-target audit, see
+[`docs/reproducibility.md`](docs/reproducibility.md). The checked-in example
+identification and validation scripts intentionally use small trial/evaluation
+budgets so they remain quick executable examples; the library APIs support the
+full public splits.
+
 ## Rendering and scientific visualization
 
 `src/loaded_cmj/rendering.py` captures the live post-step MuJoCo state and
@@ -123,7 +146,24 @@ from live plant landmarks but is never stepped for physics.
 - `data/`: public identification and validation observations.
 - `tools/`: deterministic dataset and equivalence utilities.
 - `tests/`: plant integrity, mechanics, preprocessing, dataset, and validation checks.
-- `docs/`: methodology, mechanics, measurement, identification, validation, and provenance notes.
+- `docs/`: methodology, mechanics, measurement, identification, validation,
+  API, visualization, provenance, reproducibility, and release notes.
+
+The most useful starting points are:
+
+- [`docs/methodology.md`](docs/methodology.md): scientific workflow and source
+  preprocessing contract;
+- [`docs/mechanics.md`](docs/mechanics.md): plant topology, contacts, actuators,
+  and model integrity;
+- [`docs/api.md`](docs/api.md): programmatic entry points and data flow;
+- [`docs/visualization.md`](docs/visualization.md): phase shading, channel
+  semantics, figure set, and renderer behavior;
+- [`docs/reproducibility.md`](docs/reproducibility.md): fresh-environment and
+  source-equivalence qualification;
+- [`docs/provenance.md`](docs/provenance.md): direct-port and visual-asset
+  provenance;
+- [`docs/release-checklist.md`](docs/release-checklist.md): owner actions needed
+  once a hosted repository exists.
 
 ## Limitations
 
@@ -138,6 +178,12 @@ Original code is released under Apache-2.0. The MakeHuman asset family keeps
 its CC0 notice and provenance records in
 `assets/makehuman_cmj_visual/`; those records apply to the visual asset family
 and are separate from the code license.
+
+The citation file intentionally contains no repository URL or DOI because no
+hosted repository or archival record exists yet. Replace the accountable author
+metadata and add those identifiers only when they are real; see
+[`CITATION.cff`](CITATION.cff) and the
+[`local release checklist`](docs/release-checklist.md).
 
 ## References
 
