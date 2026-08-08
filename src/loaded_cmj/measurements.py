@@ -5,6 +5,7 @@ from __future__ import annotations
 from .plant import (
     CANONICAL_SUMMARY_KEYS,
     CANONICAL_TRACE_KEYS,
+    EXTENDED_KINEMATICS_TRACE_KEYS,
     NEW_TELEMETRY_TRACE_KEYS,
     extract_traces,
     summarize_trial,
@@ -27,15 +28,20 @@ MEASUREMENT_CHANNELS = {
         "units": "m, rad, rad/s",
         "description": "Model state channels used for event and mechanics diagnostics.",
     },
+    "kinematics": {
+        "channels": EXTENDED_KINEMATICS_TRACE_KEYS,
+        "units": "native SI/radian state units",
+        "description": "Read-only COM, joint, and bar-rack qpos/qvel traces from the same MuJoCo rollout.",
+    },
 }
 
 
 __all__ = [
     "CANONICAL_SUMMARY_KEYS",
     "CANONICAL_TRACE_KEYS",
+    "EXTENDED_KINEMATICS_TRACE_KEYS",
     "NEW_TELEMETRY_TRACE_KEYS",
     "MEASUREMENT_CHANNELS",
     "extract_traces",
     "summarize_trial",
 ]
-

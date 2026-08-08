@@ -193,6 +193,41 @@ NEW_TELEMETRY_TRACE_KEYS = (
         "right_slip_vx_m_s",
     )
 )
+# Exact state channels used by the renderer's joint/COM telemetry panel.  These
+# are read-only MuJoCo qpos/qvel/subtree-com values recorded during the same
+# rollout; they are not new derived measurements or alternate plant outputs.
+EXTENDED_KINEMATICS_TRACE_KEYS = (
+    "com_x_m",
+    "com_z_m",
+    "root_x_velocity_m_s",
+    "root_z_velocity_m_s",
+    "lumbar_pitch_rad",
+    "lumbar_pitch_rate_rad_s",
+    "left_hip_velocity_rad_s",
+    "right_hip_velocity_rad_s",
+    "left_knee_velocity_rad_s",
+    "right_knee_velocity_rad_s",
+    "left_ankle_velocity_rad_s",
+    "right_ankle_velocity_rad_s",
+    "left_forefoot_rocker_velocity_rad_s",
+    "right_forefoot_rocker_velocity_rad_s",
+    "left_mtp_velocity_rad_s",
+    "right_mtp_velocity_rad_s",
+    "left_shoulder_rad",
+    "right_shoulder_rad",
+    "left_elbow_rad",
+    "right_elbow_rad",
+    "left_shoulder_velocity_rad_s",
+    "right_shoulder_velocity_rad_s",
+    "left_elbow_velocity_rad_s",
+    "right_elbow_velocity_rad_s",
+    "bar_rack_x_m",
+    "bar_rack_z_m",
+    "bar_rack_pitch_rad",
+    "bar_rack_x_velocity_m_s",
+    "bar_rack_z_velocity_m_s",
+    "bar_rack_pitch_velocity_rad_s",
+)
 PHASES = {
     "weighing": (0.00, 1.50),
     "unweighting": (1.50, 1.82),
@@ -407,6 +442,9 @@ def run_trial(
     history = _simulate_trial_history(params, trial, model=model, data=data, record=record)
     traces = extract_traces(model, data, history, trial)
     for key in NEW_TELEMETRY_TRACE_KEYS:
+        if key in history:
+            traces[key] = history[key]
+    for key in EXTENDED_KINEMATICS_TRACE_KEYS:
         if key in history:
             traces[key] = history[key]
     events = detect_events(traces)
@@ -1068,6 +1106,36 @@ def _simulate_trial_history(
     right_hip: list[float] = []
     right_knee: list[float] = []
     right_ankle: list[float] = []
+    com_x: list[float] = []
+    com_z: list[float] = []
+    root_x_velocity: list[float] = []
+    root_z_velocity: list[float] = []
+    lumbar_pitch: list[float] = []
+    lumbar_pitch_rate: list[float] = []
+    left_hip_velocity: list[float] = []
+    right_hip_velocity: list[float] = []
+    left_knee_velocity: list[float] = []
+    right_knee_velocity: list[float] = []
+    left_ankle_velocity: list[float] = []
+    right_ankle_velocity: list[float] = []
+    left_rocker_velocity: list[float] = []
+    right_rocker_velocity: list[float] = []
+    left_mtp_velocity: list[float] = []
+    right_mtp_velocity: list[float] = []
+    left_shoulder: list[float] = []
+    right_shoulder: list[float] = []
+    left_elbow: list[float] = []
+    right_elbow: list[float] = []
+    left_shoulder_velocity: list[float] = []
+    right_shoulder_velocity: list[float] = []
+    left_elbow_velocity: list[float] = []
+    right_elbow_velocity: list[float] = []
+    bar_rack_x: list[float] = []
+    bar_rack_z: list[float] = []
+    bar_rack_pitch: list[float] = []
+    bar_rack_x_velocity: list[float] = []
+    bar_rack_z_velocity: list[float] = []
+    bar_rack_pitch_velocity: list[float] = []
     qvel_norms: list[float] = []
     motor_torque_norms: list[float] = []
     aux_force_norms: list[float] = []
@@ -1167,6 +1235,13 @@ def _simulate_trial_history(
         root_z.append(float(data.xpos[ids["pelvis_body"]][2]))
         root_pitch.append(_qpos_value(model, data, "root_pitch"))
         root_pitch_rate.append(_qvel_value(model, data, "root_pitch"))
+        subtree_com = data.subtree_com[ids["pelvis_body"]]
+        com_x.append(float(subtree_com[0]))
+        com_z.append(float(subtree_com[2]))
+        root_x_velocity.append(_qvel_value(model, data, "root_x"))
+        root_z_velocity.append(_qvel_value(model, data, "root_z"))
+        lumbar_pitch.append(_qpos_value(model, data, "lumbar_pitch"))
+        lumbar_pitch_rate.append(_qvel_value(model, data, "lumbar_pitch"))
         phase_index.append(PHASE_INDEX[phase])
 
         bar_pos = _bar_measurement_position(model, data, ids, params)
@@ -1193,6 +1268,30 @@ def _simulate_trial_history(
         right_hip.append(_qpos_value(model, data, "right_hip"))
         right_knee.append(_qpos_value(model, data, "right_knee"))
         right_ankle.append(_qpos_value(model, data, "right_ankle"))
+        left_hip_velocity.append(_qvel_value(model, data, "left_hip"))
+        right_hip_velocity.append(_qvel_value(model, data, "right_hip"))
+        left_knee_velocity.append(_qvel_value(model, data, "left_knee"))
+        right_knee_velocity.append(_qvel_value(model, data, "right_knee"))
+        left_ankle_velocity.append(_qvel_value(model, data, "left_ankle"))
+        right_ankle_velocity.append(_qvel_value(model, data, "right_ankle"))
+        left_rocker_velocity.append(_qvel_value(model, data, "left_forefoot_rocker"))
+        right_rocker_velocity.append(_qvel_value(model, data, "right_forefoot_rocker"))
+        left_mtp_velocity.append(_qvel_value(model, data, "left_mtp"))
+        right_mtp_velocity.append(_qvel_value(model, data, "right_mtp"))
+        left_shoulder.append(_qpos_value(model, data, "left_shoulder"))
+        right_shoulder.append(_qpos_value(model, data, "right_shoulder"))
+        left_elbow.append(_qpos_value(model, data, "left_elbow"))
+        right_elbow.append(_qpos_value(model, data, "right_elbow"))
+        left_shoulder_velocity.append(_qvel_value(model, data, "left_shoulder"))
+        right_shoulder_velocity.append(_qvel_value(model, data, "right_shoulder"))
+        left_elbow_velocity.append(_qvel_value(model, data, "left_elbow"))
+        right_elbow_velocity.append(_qvel_value(model, data, "right_elbow"))
+        bar_rack_x.append(_qpos_value(model, data, "bar_rack_x"))
+        bar_rack_z.append(_qpos_value(model, data, "bar_rack_z"))
+        bar_rack_pitch.append(_qpos_value(model, data, "bar_rack_pitch"))
+        bar_rack_x_velocity.append(_qvel_value(model, data, "bar_rack_x"))
+        bar_rack_z_velocity.append(_qvel_value(model, data, "bar_rack_z"))
+        bar_rack_pitch_velocity.append(_qvel_value(model, data, "bar_rack_pitch"))
         qvel_norms.append(_vector_norm(data.qvel))
         motor_torque_norms.append(_vector_norm(motor_ctrl))
         aux_force_norms.append(_vector_norm(data.qfrc_applied) + _vector_norm(data.xfrc_applied))
@@ -1270,6 +1369,36 @@ def _simulate_trial_history(
         "right_hip_rad": right_hip,
         "right_knee_rad": right_knee,
         "right_ankle_rad": right_ankle,
+        "com_x_m": com_x,
+        "com_z_m": com_z,
+        "root_x_velocity_m_s": root_x_velocity,
+        "root_z_velocity_m_s": root_z_velocity,
+        "lumbar_pitch_rad": lumbar_pitch,
+        "lumbar_pitch_rate_rad_s": lumbar_pitch_rate,
+        "left_hip_velocity_rad_s": left_hip_velocity,
+        "right_hip_velocity_rad_s": right_hip_velocity,
+        "left_knee_velocity_rad_s": left_knee_velocity,
+        "right_knee_velocity_rad_s": right_knee_velocity,
+        "left_ankle_velocity_rad_s": left_ankle_velocity,
+        "right_ankle_velocity_rad_s": right_ankle_velocity,
+        "left_forefoot_rocker_velocity_rad_s": left_rocker_velocity,
+        "right_forefoot_rocker_velocity_rad_s": right_rocker_velocity,
+        "left_mtp_velocity_rad_s": left_mtp_velocity,
+        "right_mtp_velocity_rad_s": right_mtp_velocity,
+        "left_shoulder_rad": left_shoulder,
+        "right_shoulder_rad": right_shoulder,
+        "left_elbow_rad": left_elbow,
+        "right_elbow_rad": right_elbow,
+        "left_shoulder_velocity_rad_s": left_shoulder_velocity,
+        "right_shoulder_velocity_rad_s": right_shoulder_velocity,
+        "left_elbow_velocity_rad_s": left_elbow_velocity,
+        "right_elbow_velocity_rad_s": right_elbow_velocity,
+        "bar_rack_x_m": bar_rack_x,
+        "bar_rack_z_m": bar_rack_z,
+        "bar_rack_pitch_rad": bar_rack_pitch,
+        "bar_rack_x_velocity_m_s": bar_rack_x_velocity,
+        "bar_rack_z_velocity_m_s": bar_rack_z_velocity,
+        "bar_rack_pitch_velocity_rad_s": bar_rack_pitch_velocity,
     }
     for g in FOOT_CONTACT_GEOMS:
         trace[f"{g}_contact"] = region_contact[g]

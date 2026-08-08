@@ -16,6 +16,9 @@ rendering entry points around that plant.
 
 The intended presentation output is `media/loaded_cmj_demo.mp4`, with a static
 observable comparison in `media/observable_fit.png` when generated locally.
+`python examples/plot_observables.py` also writes separated dark-background
+figures for force-platform metrics, global/foot/joint kinematics, contact
+mechanics, phase timing, and scalar summaries.
 Those are derived artifacts from the committed source plant; the renderer is
 wired to the approved MakeHuman visual asset family, external bar, bilateral
 force plates, force/LPT traces, event markers, phase labels, and mechanics
@@ -103,7 +106,10 @@ renderer writes 1280×720 H.264 MP4 output at 30 fps by default.
 `src/loaded_cmj/rendering.py` captures the live post-step MuJoCo state and
 composes the MakeHuman body, bar, plate, LPT device/tether, exact COM marker,
 bilateral force traces, bar/LPT trace, phase strip, event markers, joint
-kinematics, and metric panels. The MakeHuman scene is render-only: it is posed
+kinematics, and metric panels. The plotting example keeps kinetics separate
+from kinematics, except for the explicitly combined force-plate/bar-LPT
+measurement figure. All figures use the source-defined CMJ phase timing as
+translucent background bands. The MakeHuman scene is render-only: it is posed
 from live plant landmarks but is never stepped for physics.
 
 ## Repository structure
