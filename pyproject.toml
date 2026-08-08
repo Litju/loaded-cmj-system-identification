@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "loaded-cmj-system-identification"
+version = "0.1.0"
+description = "Full-fidelity MuJoCo loaded countermovement-jump system identification research package"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "Loaded CMJ research contributors" }]
+keywords = ["MuJoCo", "biomechanics", "force platform", "system identification"]
+dependencies = [
+  "mujoco>=3.2,<4",
+  "numpy>=1.24,<3",
+  "scipy>=1.10,<2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7", "matplotlib>=3.7"]
+
+[project.scripts]
+loaded-cmj-render = "loaded_cmj.rendering:main"
+loaded-cmj-generate = "loaded_cmj.dataset:generate_dataset"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+

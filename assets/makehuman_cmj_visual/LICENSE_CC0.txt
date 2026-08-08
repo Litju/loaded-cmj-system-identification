@@ -1,0 +1,17 @@
+MakeHuman CMJ visual asset license note
+=======================================
+
+This project treats the exported MakeHuman core body asset as CC0 for the
+included render-only visualization, based on MakeHuman core/exported asset
+licensing for official MakeHuman exports.
+
+The copied OBJ/MTL headers identify the exporter/source as:
+  www.makehumancommunity.org
+
+Useful upstream references:
+  https://www.makehumancommunity.org/
+  https://static.makehumancommunity.org/makehuman/docs/licensing.html
+
+No real-person likeness, logo, brand asset, or non-MakeHuman third-party visual
+asset was added. If a stricter upstream license is later identified for any
+copied component, retain the applicable notice or remove that component.

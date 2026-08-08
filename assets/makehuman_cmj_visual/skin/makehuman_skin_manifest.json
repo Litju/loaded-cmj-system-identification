@@ -1,0 +1,20 @@
+{
+  "generator": "dae_to_mujoco_skin_converter.py",
+  "source_dae": "makehuman_cmj_body.dae",
+  "skin_xml": "makehuman_skin_visual.xml",
+  "bones_json": "makehuman_skin_bones.json",
+  "n_vertices": 13380,
+  "n_faces": 26756,
+  "n_bones_total": 163,
+  "n_bones_skinned": 124,
+  "skin_rgba": [
+    0.79,
+    0.58,
+    0.45,
+    1.0
+  ],
+  "lbs_convention": "v_world = sum_b w_b * BodyXform_b * inv(BindXform_b) * v_skin",
+  "render_only": true,
+  "physics_inert": true,
+  "xml_sha256": "be0bb73f1164d33ede58dbca4a23b5bf63c09a703426a0f34b3530118a9073db"
+}

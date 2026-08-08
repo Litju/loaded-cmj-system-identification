@@ -1,0 +1,192 @@
+<mujoco model="loaded_cmj_forceplate_lpt_sysid_a1_scratch">
+  <compiler angle="radian" inertiafromgeom="true" autolimits="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" iterations="100" tolerance="1e-10" cone="pyramidal"/>
+  <size njmax="500" nconmax="200"/>
+  <default>
+    <geom friction="3.0 0.5 0.1" condim="6" solref="0.015 1" solimp="0.9 0.98 0.001 0.5 2"/>
+    <joint armature="0.015" limited="true" damping="1"/>
+    <site size="0.018" rgba="0.1 0.4 0.9 1"/>
+    <default class="structural">
+      <geom contype="0" conaffinity="0" rgba="0.55 0.58 0.62 1"/>
+    </default>
+    <default class="foot_contact">
+      <geom contype="2" conaffinity="1" density="0" friction="3.0 0.5 0.1" condim="6" solref="0.015 1" solimp="0.9 0.98 0.001 0.5 2" rgba="0.04 0.04 0.04 1"/>
+    </default>
+    <default class="leg_joint">
+      <joint armature="0.020" limited="true" damping="4.0" stiffness="20" solreflimit="0.01 1" solimplimit="0.9 0.98 0.001 0.5 2"/>
+    </default>
+    <default class="foot_passive">
+      <joint armature="0.006" limited="true" damping="10" stiffness="140" springref="0" solreflimit="0.01 1" solimplimit="0.9 0.98 0.001 0.5 2"/>
+    </default>
+    <default class="core_joint">
+      <joint armature="0.020" limited="true" damping="120" stiffness="3000" solreflimit="0.01 1" solimplimit="0.9 0.98 0.001 0.5 2"/>
+    </default>
+    <default class="arm_joint">
+      <joint armature="0.015" limited="true" damping="40" stiffness="2500" springref="0" solreflimit="0.01 1" solimplimit="0.9 0.98 0.001 0.5 2"/>
+    </default>
+  </default>
+  <worldbody>
+    <geom name="force_plate" type="box" pos="0 0 -0.025" size="1.25 0.50 0.025" contype="1" conaffinity="2" friction="1.1 0.005 0.0001" condim="3" solref="0.015 1" solimp="0.9 0.98 0.001 0.5 2" rgba="0.18 0.20 0.22 1"/>
+    <site name="lpt_anchor" pos="-0.80 0 2.10" rgba="0.2 0.4 1 1"/>
+    <body name="pelvis" pos="0 0 1.00">
+      <joint name="root_x" type="slide" axis="1 0 0" range="-0.45 0.45" stiffness="8000" damping="1600" springref="0"/>
+      <joint name="root_z" type="slide" axis="0 0 1" range="-0.65 0.85" damping="85"/>
+      <joint name="root_pitch" type="hinge" axis="0 1 0" range="-0.45 0.45" stiffness="3200" damping="300" springref="0.12"/>
+      <geom name="pelvis_geom" class="structural" type="ellipsoid" pos="0 0 0.02" size="0.135 0.185 0.105" mass="11.0" rgba="0.65 0.55 0.45 1"/>
+      <geom name="sacrum_geom" class="structural" type="capsule" fromto="-0.04 0 0.02 -0.05 0 0.12" size="0.055" mass="0.0" rgba="0.62 0.53 0.44 1"/>
+      <site name="pelvis_com_site" pos="0 0 0"/>
+      <site name="pelvis_site" pos="0 0 0.02"/>
+      <site name="root_site" pos="0 0 0.02"/>
+      <body name="torso" pos="0 0 0.14">
+        <joint name="lumbar_pitch" class="core_joint" type="hinge" axis="0 -1 0" range="-0.35 0.30" springref="-0.06"/>
+        <geom name="abdomen_geom" class="structural" type="capsule" fromto="0 0 0.02 -0.02 0 0.28" size="0.115" mass="12.0" rgba="0.55 0.58 0.62 1"/>
+        <geom name="thorax_geom" class="structural" type="capsule" fromto="-0.02 0 0.26 -0.05 0 0.54" size="0.135" mass="14.15" rgba="0.58 0.61 0.66 1"/>
+        <site name="lumbar_site" pos="0 0 0.02"/>
+        <site name="sternum_site" pos="0.05 0 0.34"/>
+        <body name="head" pos="-0.05 0 0.56">
+          <geom name="neck_geom" class="structural" type="capsule" fromto="0 0 0 0.015 0 0.05" size="0.045" mass="0.6" rgba="0.60 0.62 0.66 1"/>
+          <geom name="head_geom" class="structural" type="sphere" pos="0.03 0 0.11" size="0.088" mass="3.4" rgba="0.68 0.62 0.56 1"/>
+          <site name="head_site" pos="0.03 0 0.11"/>
+        </body>
+        <body name="bar" pos="-0.23 0 0.46">
+          <joint name="bar_rack_x" type="slide" axis="1 0 0" range="-0.10 0.10" stiffness="28000" damping="900"/>
+          <joint name="bar_rack_z" type="slide" axis="0 0 1" range="-0.10 0.10" stiffness="28000" damping="900"/>
+          <joint name="bar_rack_pitch" type="hinge" axis="0 1 0" range="-0.18 0.18" stiffness="6025" damping="247"/>
+          <geom name="bar_capsule" class="structural" type="capsule" fromto="0 -0.62 0 0 0.62 0" size="0.035" mass="20.0" rgba="0.10 0.10 0.10 1"/>
+          <site name="bar_lpt_site" pos="0 -0.62 0"/>
+          <site name="left_bar_grip_site" pos="0 0.36 0"/>
+          <site name="right_bar_grip_site" pos="0 -0.36 0"/>
+        </body>
+        <body name="left_upper_arm" pos="-0.05 0.19 0.52">
+          <joint name="left_shoulder" class="arm_joint" type="hinge" axis="0 -1 0" range="-0.7 0.7"/>
+          <geom name="left_upper_arm_geom" class="structural" type="capsule" fromto="0 0 0 0.05 0.11 -0.26" size="0.036" mass="2.10" rgba="0.55 0.58 0.62 1"/>
+          <body name="left_forearm" pos="0.05 0.11 -0.26">
+            <joint name="left_elbow" class="arm_joint" type="hinge" axis="0 -1 0" range="-0.7 0.7"/>
+            <geom name="left_forearm_geom" class="structural" type="capsule" fromto="0 0 0 -0.22 0.05 0.20" size="0.032" mass="1.70" rgba="0.50 0.52 0.58 1"/>
+            <site name="left_hand_site" pos="-0.22 0.05 0.20"/>
+          </body>
+        </body>
+        <body name="right_upper_arm" pos="-0.05 -0.19 0.52">
+          <joint name="right_shoulder" class="arm_joint" type="hinge" axis="0 -1 0" range="-0.7 0.7"/>
+          <geom name="right_upper_arm_geom" class="structural" type="capsule" fromto="0 0 0 0.05 -0.11 -0.26" size="0.036" mass="2.10" rgba="0.55 0.58 0.62 1"/>
+          <body name="right_forearm" pos="0.05 -0.11 -0.26">
+            <joint name="right_elbow" class="arm_joint" type="hinge" axis="0 -1 0" range="-0.7 0.7"/>
+            <geom name="right_forearm_geom" class="structural" type="capsule" fromto="0 0 0 -0.22 -0.05 0.20" size="0.032" mass="1.70" rgba="0.50 0.52 0.58 1"/>
+            <site name="right_hand_site" pos="-0.22 -0.05 0.20"/>
+          </body>
+        </body>
+      </body>
+      <body name="left_thigh" pos="0 0.16 -0.12">
+        <joint name="left_hip" class="leg_joint" type="hinge" axis="0 -1 0" range="-1.1 1.35" stiffness="25" damping="4" springref="0.08"/>
+        <site name="left_hip_site" pos="0 0 0"/>
+        <geom name="left_thigh_geom" class="structural" type="capsule" fromto="0 0 0 0 0 -0.34" size="0.045" mass="7.5" rgba="0.50 0.50 0.55 1"/>
+        <body name="left_shank" pos="0 0 -0.34">
+          <joint name="left_knee" class="leg_joint" type="hinge" axis="0 -1 0" range="-1.95 0.05" stiffness="35" damping="5" springref="-0.12"/>
+          <site name="left_knee_site" pos="0 0 0"/>
+          <geom name="left_shank_geom" class="structural" type="capsule" fromto="0 0 0 0 0 -0.36" size="0.040" mass="3.75" rgba="0.45 0.47 0.52 1"/>
+          <body name="left_hindfoot" pos="0.02 0 -0.38">
+            <joint name="left_ankle" class="leg_joint" type="hinge" axis="0 -1 0" range="-0.7 0.9" stiffness="45" damping="5" springref="0.04"/>
+            <site name="left_ankle_site" pos="0 0 0"/>
+            <geom name="left_hindfoot_geom" class="structural" type="box" pos="0.00 0 -0.010" size="0.070 0.045 0.022" mass="1.03125" rgba="0.20 0.20 0.22 1"/>
+            <geom name="left_heel" class="foot_contact" type="box" pos="-0.055 0 -0.045" size="0.035 0.043 0.012"/>
+            <site name="left_heel_site" pos="-0.055 0 -0.045" size="0.024"/>
+            <body name="left_forefoot" pos="0.095 0 -0.005">
+              <joint name="left_forefoot_rocker" class="foot_passive" type="hinge" axis="0 -1 0" range="-0.30 0.06" stiffness="95" damping="3.5" springref="0"/>
+              <geom name="left_forefoot_geom_struct" class="structural" type="box" pos="0.025 0 -0.010" size="0.065 0.043 0.020" mass="0.5625" rgba="0.17 0.17 0.19 1"/>
+              <geom name="left_forefoot" class="foot_contact" type="box" pos="0.035 0 -0.042" size="0.052 0.043 0.010"/>
+              <site name="left_forefoot_site" pos="0.035 0 -0.042" size="0.023"/>
+              <body name="left_toe" pos="0.075 0 0">
+                <joint name="left_mtp" class="foot_passive" type="hinge" axis="0 -1 0" range="-0.10 0.80" stiffness="8" damping="0.8" springref="0"/>
+                <site name="left_mtp_site" pos="0 0 0"/>
+                <geom name="left_toe_geom_struct" class="structural" type="box" pos="0.025 0 -0.010" size="0.040 0.040 0.018" mass="0.28125" rgba="0.14 0.14 0.16 1"/>
+                <geom name="left_toe" class="foot_contact" type="box" pos="0.055 0 -0.040" size="0.030 0.040 0.009"/>
+                <site name="left_toe_site" pos="0.055 0 -0.040" size="0.021"/>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+      <body name="right_thigh" pos="0 -0.16 -0.12">
+        <joint name="right_hip" class="leg_joint" type="hinge" axis="0 -1 0" range="-1.1 1.35" stiffness="25" damping="4" springref="0.08"/>
+        <site name="right_hip_site" pos="0 0 0"/>
+        <geom name="right_thigh_geom" class="structural" type="capsule" fromto="0 0 0 0 0 -0.34" size="0.045" mass="7.5" rgba="0.50 0.50 0.55 1"/>
+        <body name="right_shank" pos="0 0 -0.34">
+          <joint name="right_knee" class="leg_joint" type="hinge" axis="0 -1 0" range="-1.95 0.05" stiffness="35" damping="5" springref="-0.12"/>
+          <site name="right_knee_site" pos="0 0 0"/>
+          <geom name="right_shank_geom" class="structural" type="capsule" fromto="0 0 0 0 0 -0.36" size="0.040" mass="3.75" rgba="0.45 0.47 0.52 1"/>
+          <body name="right_hindfoot" pos="0.02 0 -0.38">
+            <joint name="right_ankle" class="leg_joint" type="hinge" axis="0 -1 0" range="-0.7 0.9" stiffness="45" damping="5" springref="0.04"/>
+            <site name="right_ankle_site" pos="0 0 0"/>
+            <geom name="right_hindfoot_geom" class="structural" type="box" pos="0.00 0 -0.010" size="0.070 0.045 0.022" mass="1.03125" rgba="0.20 0.20 0.22 1"/>
+            <geom name="right_heel" class="foot_contact" type="box" pos="-0.055 0 -0.045" size="0.035 0.043 0.012"/>
+            <site name="right_heel_site" pos="-0.055 0 -0.045" size="0.024"/>
+            <body name="right_forefoot" pos="0.095 0 -0.005">
+              <joint name="right_forefoot_rocker" class="foot_passive" type="hinge" axis="0 -1 0" range="-0.30 0.06" stiffness="95" damping="3.5" springref="0"/>
+              <geom name="right_forefoot_geom_struct" class="structural" type="box" pos="0.025 0 -0.010" size="0.065 0.043 0.020" mass="0.5625" rgba="0.17 0.17 0.19 1"/>
+              <geom name="right_forefoot" class="foot_contact" type="box" pos="0.035 0 -0.042" size="0.052 0.043 0.010"/>
+              <site name="right_forefoot_site" pos="0.035 0 -0.042" size="0.023"/>
+              <body name="right_toe" pos="0.075 0 0">
+                <joint name="right_mtp" class="foot_passive" type="hinge" axis="0 -1 0" range="-0.10 0.80" stiffness="8" damping="0.8" springref="0"/>
+                <site name="right_mtp_site" pos="0 0 0"/>
+                <geom name="right_toe_geom_struct" class="structural" type="box" pos="0.025 0 -0.010" size="0.040 0.040 0.018" mass="0.28125" rgba="0.14 0.14 0.16 1"/>
+                <geom name="right_toe" class="foot_contact" type="box" pos="0.055 0 -0.040" size="0.030 0.040 0.009"/>
+                <site name="right_toe_site" pos="0.055 0 -0.040" size="0.021"/>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+  <contact>
+    <pair name="left_heel_ground" geom1="force_plate" geom2="left_heel" condim="6" friction="3.0 0.5 0.1" solref="0.015 1" solimp="0.9 0.98 0.001 0.5 2"/>
+    <pair name="left_forefoot_ground" geom1="force_plate" geom2="left_forefoot" condim="6" friction="3.0 0.5 0.1" solref="0.015 1" solimp="0.9 0.98 0.001 0.5 2"/>
+    <pair name="left_toe_ground" geom1="force_plate" geom2="left_toe" condim="6" friction="3.0 0.5 0.1" solref="0.015 1" solimp="0.9 0.98 0.001 0.5 2"/>
+    <pair name="right_heel_ground" geom1="force_plate" geom2="right_heel" condim="6" friction="3.0 0.5 0.1" solref="0.015 1" solimp="0.9 0.98 0.001 0.5 2"/>
+    <pair name="right_forefoot_ground" geom1="force_plate" geom2="right_forefoot" condim="6" friction="3.0 0.5 0.1" solref="0.015 1" solimp="0.9 0.98 0.001 0.5 2"/>
+    <pair name="right_toe_ground" geom1="force_plate" geom2="right_toe" condim="6" friction="3.0 0.5 0.1" solref="0.015 1" solimp="0.9 0.98 0.001 0.5 2"/>
+    <exclude body1="left_hindfoot" body2="left_forefoot"/>
+    <exclude body1="left_forefoot" body2="left_toe"/>
+    <exclude body1="right_hindfoot" body2="right_forefoot"/>
+    <exclude body1="right_forefoot" body2="right_toe"/>
+  </contact>
+  <tendon>
+    <spatial name="left_hand_grip" limited="true" range="0 0.11" stiffness="18000" damping="600">
+      <site site="left_hand_site"/>
+      <site site="left_bar_grip_site"/>
+    </spatial>
+    <spatial name="right_hand_grip" limited="true" range="0 0.11" stiffness="18000" damping="600">
+      <site site="right_hand_site"/>
+      <site site="right_bar_grip_site"/>
+    </spatial>
+    <spatial name="lpt_tether" limited="false" stiffness="0" damping="0">
+      <site site="lpt_anchor"/>
+      <site site="bar_lpt_site"/>
+    </spatial>
+    <fixed name="hip_lumbar_hinge" limited="false" stiffness="2200" damping="20" springlength="-0.067200">
+      <joint joint="lumbar_pitch" coef="1"/>
+      <joint joint="left_hip" coef="0.18"/>
+      <joint joint="right_hip" coef="0.18"/>
+    </fixed>
+  </tendon>
+  <actuator>
+    <motor name="left_hip_torque" joint="left_hip" gear="1" ctrlrange="-1300 1300"/>
+    <motor name="left_knee_torque" joint="left_knee" gear="1" ctrlrange="-2000 2000"/>
+    <motor name="left_ankle_torque" joint="left_ankle" gear="1" ctrlrange="-1300 1300"/>
+    <motor name="right_hip_torque" joint="right_hip" gear="1" ctrlrange="-1300 1300"/>
+    <motor name="right_knee_torque" joint="right_knee" gear="1" ctrlrange="-2000 2000"/>
+    <motor name="right_ankle_torque" joint="right_ankle" gear="1" ctrlrange="-1300 1300"/>
+  </actuator>
+  <sensor>
+    <touch name="left_heel_touch" site="left_heel_site"/>
+    <touch name="left_forefoot_touch" site="left_forefoot_site"/>
+    <touch name="left_toe_touch" site="left_toe_site"/>
+    <touch name="right_heel_touch" site="right_heel_site"/>
+    <touch name="right_forefoot_touch" site="right_forefoot_site"/>
+    <touch name="right_toe_touch" site="right_toe_site"/>
+    <framepos name="left_toe_pos" objtype="site" objname="left_toe_site"/>
+    <framelinvel name="left_toe_vel" objtype="site" objname="left_toe_site"/>
+    <framepos name="right_toe_pos" objtype="site" objname="right_toe_site"/>
+    <framelinvel name="right_toe_vel" objtype="site" objname="right_toe_site"/>
+  </sensor>
+</mujoco>

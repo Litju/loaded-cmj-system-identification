@@ -1,0 +1,353 @@
+{
+  "render_axes": {
+    "x": "sagittal/front",
+    "y": "lateral",
+    "z": "up"
+  },
+  "segments": {
+    "head": {
+      "file": "segments/head.obj",
+      "local_axis": [
+        0,
+        0,
+        1
+      ],
+      "local_bbox_max_m": [
+        0.11860000000000001,
+        0.1933,
+        0.1564000000000001
+      ],
+      "local_bbox_min_m": [
+        -0.11860000000000001,
+        -0.1933,
+        -0.15639999999999987
+      ],
+      "local_center_render_axes_m": [
+        0.0517,
+        0.0,
+        1.4701
+      ],
+      "source_face_count": 5524,
+      "triangulated_face_count": 11048,
+      "vertex_count": 5594
+    },
+    "left_foot": {
+      "file": "segments/left_foot.obj",
+      "local_axis": [
+        1,
+        0,
+        0
+      ],
+      "local_bbox_max_m": [
+        0.12079999999999999,
+        0.045399999999999996,
+        0.10445
+      ],
+      "local_bbox_min_m": [
+        -0.12079999999999999,
+        -0.045399999999999996,
+        -0.10445
+      ],
+      "local_center_render_axes_m": [
+        0.0794,
+        0.1896,
+        0.10445
+      ],
+      "source_face_count": 1140,
+      "triangulated_face_count": 2280,
+      "vertex_count": 1152
+    },
+    "left_forearm": {
+      "file": "segments/left_forearm.obj",
+      "local_axis": [
+        0,
+        1,
+        0
+      ],
+      "local_bbox_max_m": [
+        0.18605,
+        0.13839999999999997,
+        0.18825000000000003
+      ],
+      "local_bbox_min_m": [
+        -0.18605,
+        -0.13839999999999997,
+        -0.18825000000000003
+      ],
+      "local_center_render_axes_m": [
+        0.15844999999999998,
+        0.4063,
+        1.06515
+      ],
+      "source_face_count": 1950,
+      "triangulated_face_count": 3900,
+      "vertex_count": 1966
+    },
+    "left_shank": {
+      "file": "segments/left_shank.obj",
+      "local_axis": [
+        0,
+        0,
+        -1
+      ],
+      "local_bbox_max_m": [
+        0.07264999999999999,
+        0.07455,
+        0.239
+      ],
+      "local_bbox_min_m": [
+        -0.07264999999999999,
+        -0.07454999999999998,
+        -0.23900000000000002
+      ],
+      "local_center_render_axes_m": [
+        0.023549999999999998,
+        0.13294999999999998,
+        0.3133
+      ],
+      "source_face_count": 273,
+      "triangulated_face_count": 546,
+      "vertex_count": 304
+    },
+    "left_thigh": {
+      "file": "segments/left_thigh.obj",
+      "local_axis": [
+        0,
+        0,
+        -1
+      ],
+      "local_bbox_max_m": [
+        0.0972,
+        0.0944,
+        0.2753
+      ],
+      "local_bbox_min_m": [
+        -0.0972,
+        -0.09439999999999998,
+        -0.2753
+      ],
+      "local_center_render_axes_m": [
+        0.0213,
+        0.11789999999999999,
+        0.6353
+      ],
+      "source_face_count": 412,
+      "triangulated_face_count": 824,
+      "vertex_count": 446
+    },
+    "left_upper_arm": {
+      "file": "segments/left_upper_arm.obj",
+      "local_axis": [
+        0,
+        1,
+        0
+      ],
+      "local_bbox_max_m": [
+        0.07469999999999999,
+        0.11335,
+        0.1317499999999998
+      ],
+      "local_bbox_min_m": [
+        -0.07469999999999999,
+        -0.11335,
+        -0.13175000000000003
+      ],
+      "local_center_render_axes_m": [
+        0.0186,
+        0.25345,
+        1.2255500000000001
+      ],
+      "source_face_count": 328,
+      "triangulated_face_count": 656,
+      "vertex_count": 363
+    },
+    "pelvis": {
+      "file": "segments/pelvis.obj",
+      "local_axis": [
+        0,
+        0,
+        1
+      ],
+      "local_bbox_max_m": [
+        0.0972,
+        0.1753,
+        0.18190000000000006
+      ],
+      "local_bbox_min_m": [
+        -0.0972,
+        -0.1753,
+        -0.18189999999999995
+      ],
+      "local_center_render_axes_m": [
+        0.0213,
+        0.0,
+        0.7286999999999999
+      ],
+      "source_face_count": 662,
+      "triangulated_face_count": 1324,
+      "vertex_count": 705
+    },
+    "right_foot": {
+      "file": "segments/right_foot.obj",
+      "local_axis": [
+        1,
+        0,
+        0
+      ],
+      "local_bbox_max_m": [
+        0.12079999999999999,
+        0.045399999999999996,
+        0.10445
+      ],
+      "local_bbox_min_m": [
+        -0.12079999999999999,
+        -0.045399999999999996,
+        -0.10445
+      ],
+      "local_center_render_axes_m": [
+        0.0794,
+        -0.1896,
+        0.10445
+      ],
+      "source_face_count": 1140,
+      "triangulated_face_count": 2280,
+      "vertex_count": 1152
+    },
+    "right_forearm": {
+      "file": "segments/right_forearm.obj",
+      "local_axis": [
+        0,
+        -1,
+        0
+      ],
+      "local_bbox_max_m": [
+        0.18605,
+        0.13839999999999997,
+        0.18825000000000003
+      ],
+      "local_bbox_min_m": [
+        -0.18605,
+        -0.13839999999999997,
+        -0.18825000000000003
+      ],
+      "local_center_render_axes_m": [
+        0.15844999999999998,
+        -0.4063,
+        1.06515
+      ],
+      "source_face_count": 1950,
+      "triangulated_face_count": 3900,
+      "vertex_count": 1966
+    },
+    "right_shank": {
+      "file": "segments/right_shank.obj",
+      "local_axis": [
+        0,
+        0,
+        -1
+      ],
+      "local_bbox_max_m": [
+        0.07264999999999999,
+        0.07454999999999998,
+        0.239
+      ],
+      "local_bbox_min_m": [
+        -0.07264999999999999,
+        -0.07455,
+        -0.23900000000000002
+      ],
+      "local_center_render_axes_m": [
+        0.023549999999999998,
+        -0.13294999999999998,
+        0.3133
+      ],
+      "source_face_count": 273,
+      "triangulated_face_count": 546,
+      "vertex_count": 304
+    },
+    "right_thigh": {
+      "file": "segments/right_thigh.obj",
+      "local_axis": [
+        0,
+        0,
+        -1
+      ],
+      "local_bbox_max_m": [
+        0.0972,
+        0.09439999999999998,
+        0.2753
+      ],
+      "local_bbox_min_m": [
+        -0.0972,
+        -0.0944,
+        -0.2753
+      ],
+      "local_center_render_axes_m": [
+        0.0213,
+        -0.11789999999999999,
+        0.6353
+      ],
+      "source_face_count": 412,
+      "triangulated_face_count": 824,
+      "vertex_count": 446
+    },
+    "right_upper_arm": {
+      "file": "segments/right_upper_arm.obj",
+      "local_axis": [
+        0,
+        -1,
+        0
+      ],
+      "local_bbox_max_m": [
+        0.07469999999999999,
+        0.11335,
+        0.1317499999999998
+      ],
+      "local_bbox_min_m": [
+        -0.07469999999999999,
+        -0.11335,
+        -0.13175000000000003
+      ],
+      "local_center_render_axes_m": [
+        0.0186,
+        -0.25345,
+        1.2255500000000001
+      ],
+      "source_face_count": 328,
+      "triangulated_face_count": 656,
+      "vertex_count": 363
+    },
+    "torso": {
+      "file": "segments/torso.obj",
+      "local_axis": [
+        0,
+        0,
+        1
+      ],
+      "local_bbox_max_m": [
+        0.12725,
+        0.3505,
+        0.41280000000000006
+      ],
+      "local_bbox_min_m": [
+        -0.12725,
+        -0.3505,
+        -0.41280000000000006
+      ],
+      "local_center_render_axes_m": [
+        0.043050000000000005,
+        0.0,
+        1.0724
+      ],
+      "source_face_count": 3956,
+      "triangulated_face_count": 7912,
+      "vertex_count": 4092
+    }
+  },
+  "source_axes": {
+    "x": "lateral",
+    "y": "height",
+    "z": "front/back"
+  },
+  "source_obj": "makehuman_cmj_body.obj"
+}

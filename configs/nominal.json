@@ -1,0 +1,35 @@
+{
+  "body_mass_kg": 74.2,
+  "joint_stiffness_Nm_rad": [
+    6100.0,
+    7850.0,
+    4550.0
+  ],
+  "joint_damping_Nm_s_rad": [
+    205.0,
+    245.0,
+    170.0
+  ],
+  "braking_gain": 1.52,
+  "propulsive_gain": 1.72,
+  "activation_delay_s": 0.052,
+  "activation_time_constant_s": 0.105,
+  "bar_rack_stiffness_N_m": 25200.0,
+  "bar_rack_damping_N_s_m": 780.0,
+  "hand_grip_stiffness_N_m": 15800.0,
+  "hand_grip_damping_N_s_m": 510.0,
+  "contact_stiffness_N_m": 138000.0,
+  "contact_damping_N_s_m": 5600.0,
+  "force_plate_bias_N": 0.0,
+  "force_plate_scale": 1.0,
+  "encoder_scale": 1.0,
+  "encoder_delay_steps": 2,
+  "encoder_filter_tau_s": 0.016,
+  "encoder_offset_m": 0.0,
+  "bar_attachment_offset_m": [
+    0.0,
+    0.0
+  ],
+  "lpt_tether_stiffness_N_m": 0.0,
+  "lpt_tether_damping_N_s_m": 0.0
+}

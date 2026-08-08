@@ -1,0 +1,223 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "loaded-cmj-forceplate-lpt-sysid params schema v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "body_mass_kg",
+    "joint_stiffness_Nm_rad",
+    "joint_damping_Nm_s_rad",
+    "braking_gain",
+    "propulsive_gain",
+    "activation_delay_s",
+    "activation_time_constant_s",
+    "bar_rack_stiffness_N_m",
+    "bar_rack_damping_N_s_m",
+    "hand_grip_stiffness_N_m",
+    "hand_grip_damping_N_s_m",
+    "contact_stiffness_N_m",
+    "contact_damping_N_s_m",
+    "force_plate_bias_N",
+    "force_plate_scale",
+    "encoder_scale",
+    "encoder_delay_steps",
+    "encoder_filter_tau_s",
+    "encoder_offset_m",
+    "bar_attachment_offset_m",
+    "lpt_tether_stiffness_N_m",
+    "lpt_tether_damping_N_s_m"
+  ],
+  "properties": {
+    "body_mass_kg": {
+      "type": "number",
+      "minimum": 68.0,
+      "maximum": 80.4,
+      "units": "kg"
+    },
+    "joint_stiffness_Nm_rad": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "prefixItems": [
+        {
+          "type": "number",
+          "minimum": 3000.0,
+          "maximum": 9200.0
+        },
+        {
+          "type": "number",
+          "minimum": 5000.0,
+          "maximum": 10700.0
+        },
+        {
+          "type": "number",
+          "minimum": 2500.0,
+          "maximum": 6600.0
+        }
+      ],
+      "items": false,
+      "order": [
+        "hip",
+        "knee",
+        "ankle"
+      ],
+      "units": "N*m/rad"
+    },
+    "joint_damping_Nm_s_rad": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "prefixItems": [
+        {
+          "type": "number",
+          "minimum": 100.0,
+          "maximum": 310.0
+        },
+        {
+          "type": "number",
+          "minimum": 120.0,
+          "maximum": 370.0
+        },
+        {
+          "type": "number",
+          "minimum": 80.0,
+          "maximum": 260.0
+        }
+      ],
+      "items": false,
+      "order": [
+        "hip",
+        "knee",
+        "ankle"
+      ],
+      "units": "N*m*s/rad"
+    },
+    "braking_gain": {
+      "type": "number",
+      "minimum": 0.39,
+      "maximum": 2.65
+    },
+    "propulsive_gain": {
+      "type": "number",
+      "minimum": 1.3,
+      "maximum": 2.18
+    },
+    "activation_delay_s": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 0.08,
+      "units": "s"
+    },
+    "activation_time_constant_s": {
+      "type": "number",
+      "minimum": 0.06,
+      "maximum": 0.14,
+      "units": "s"
+    },
+    "bar_rack_stiffness_N_m": {
+      "type": "number",
+      "minimum": 12000.0,
+      "maximum": 38400.0,
+      "units": "N/m"
+    },
+    "bar_rack_damping_N_s_m": {
+      "type": "number",
+      "minimum": 300.0,
+      "maximum": 1260.0,
+      "units": "N*s/m"
+    },
+    "hand_grip_stiffness_N_m": {
+      "type": "number",
+      "minimum": 8000.0,
+      "maximum": 23600.0,
+      "units": "N/m"
+    },
+    "hand_grip_damping_N_s_m": {
+      "type": "number",
+      "minimum": 170.0,
+      "maximum": 850.0,
+      "units": "N*s/m"
+    },
+    "contact_stiffness_N_m": {
+      "type": "number",
+      "minimum": 90000.0,
+      "maximum": 186000.0,
+      "units": "N/m"
+    },
+    "contact_damping_N_s_m": {
+      "type": "number",
+      "minimum": 2200.0,
+      "maximum": 9000.0,
+      "units": "N*s/m"
+    },
+    "force_plate_bias_N": {
+      "type": "number",
+      "minimum": -20.0,
+      "maximum": 13.0,
+      "units": "N"
+    },
+    "force_plate_scale": {
+      "type": "number",
+      "minimum": 0.97,
+      "maximum": 1.048
+    },
+    "encoder_scale": {
+      "type": "number",
+      "minimum": 0.95,
+      "maximum": 1.032
+    },
+    "encoder_delay_steps": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4
+    },
+    "encoder_filter_tau_s": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 0.032,
+      "units": "s"
+    },
+    "encoder_offset_m": {
+      "type": "number",
+      "minimum": -0.02,
+      "maximum": 0.008,
+      "units": "m"
+    },
+    "bar_attachment_offset_m": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "prefixItems": [
+        {
+          "type": "number",
+          "minimum": -0.05,
+          "maximum": 0.022
+        },
+        {
+          "type": "number",
+          "minimum": -0.03,
+          "maximum": 0.054
+        }
+      ],
+      "items": false,
+      "order": [
+        "x",
+        "z"
+      ],
+      "units": "m"
+    },
+    "lpt_tether_stiffness_N_m": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 5.0,
+      "units": "N/m"
+    },
+    "lpt_tether_damping_N_s_m": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 0.5,
+      "units": "N*s/m"
+    }
+  },
+  "x-all-values-finite": true
+}

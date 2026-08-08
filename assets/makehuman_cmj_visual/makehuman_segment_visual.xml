@@ -1,0 +1,97 @@
+<mujoco model="makehuman_cmj_segment_visual">
+  <compiler angle="radian" meshdir="segments"/>
+  <visual>
+    <global offwidth="1280" offheight="720"/>
+    <quality shadowsize="2048"/>
+    <headlight ambient="0.55 0.55 0.55" diffuse="0.62 0.62 0.62" specular="0.08 0.08 0.08"/>
+  </visual>
+
+  <asset>
+    <mesh name="mh_head" file="head.obj"/>
+    <mesh name="mh_torso" file="torso.obj"/>
+    <mesh name="mh_pelvis" file="pelvis.obj"/>
+    <mesh name="mh_left_thigh" file="left_thigh.obj"/>
+    <mesh name="mh_right_thigh" file="right_thigh.obj"/>
+    <mesh name="mh_left_shank" file="left_shank.obj"/>
+    <mesh name="mh_right_shank" file="right_shank.obj"/>
+    <mesh name="mh_left_foot" file="left_foot.obj"/>
+    <mesh name="mh_right_foot" file="right_foot.obj"/>
+    <mesh name="mh_left_upper_arm" file="left_upper_arm.obj"/>
+    <mesh name="mh_right_upper_arm" file="right_upper_arm.obj"/>
+    <mesh name="mh_left_forearm" file="left_forearm.obj"/>
+    <mesh name="mh_right_forearm" file="right_forearm.obj"/>
+  </asset>
+
+  <default>
+    <geom type="mesh" contype="0" conaffinity="0" density="0" group="0"
+          rgba="0.79 0.58 0.45 1"/>
+  </default>
+
+  <worldbody>
+    <body name="mh_head">
+      <freejoint name="mh_head_free"/>
+      <inertial pos="0 0 0" mass="0.001" diaginertia="0.001 0.001 0.001"/>
+      <geom mesh="mh_head"/>
+    </body>
+    <body name="mh_torso">
+      <freejoint name="mh_torso_free"/>
+      <inertial pos="0 0 0" mass="0.001" diaginertia="0.001 0.001 0.001"/>
+      <geom mesh="mh_torso"/>
+    </body>
+    <body name="mh_pelvis">
+      <freejoint name="mh_pelvis_free"/>
+      <inertial pos="0 0 0" mass="0.001" diaginertia="0.001 0.001 0.001"/>
+      <geom mesh="mh_pelvis"/>
+    </body>
+    <body name="mh_left_thigh">
+      <freejoint name="mh_left_thigh_free"/>
+      <inertial pos="0 0 0" mass="0.001" diaginertia="0.001 0.001 0.001"/>
+      <geom mesh="mh_left_thigh"/>
+    </body>
+    <body name="mh_right_thigh">
+      <freejoint name="mh_right_thigh_free"/>
+      <inertial pos="0 0 0" mass="0.001" diaginertia="0.001 0.001 0.001"/>
+      <geom mesh="mh_right_thigh"/>
+    </body>
+    <body name="mh_left_shank">
+      <freejoint name="mh_left_shank_free"/>
+      <inertial pos="0 0 0" mass="0.001" diaginertia="0.001 0.001 0.001"/>
+      <geom mesh="mh_left_shank"/>
+    </body>
+    <body name="mh_right_shank">
+      <freejoint name="mh_right_shank_free"/>
+      <inertial pos="0 0 0" mass="0.001" diaginertia="0.001 0.001 0.001"/>
+      <geom mesh="mh_right_shank"/>
+    </body>
+    <body name="mh_left_foot">
+      <freejoint name="mh_left_foot_free"/>
+      <inertial pos="0 0 0" mass="0.001" diaginertia="0.001 0.001 0.001"/>
+      <geom mesh="mh_left_foot"/>
+    </body>
+    <body name="mh_right_foot">
+      <freejoint name="mh_right_foot_free"/>
+      <inertial pos="0 0 0" mass="0.001" diaginertia="0.001 0.001 0.001"/>
+      <geom mesh="mh_right_foot"/>
+    </body>
+    <body name="mh_left_upper_arm">
+      <freejoint name="mh_left_upper_arm_free"/>
+      <inertial pos="0 0 0" mass="0.001" diaginertia="0.001 0.001 0.001"/>
+      <geom mesh="mh_left_upper_arm"/>
+    </body>
+    <body name="mh_right_upper_arm">
+      <freejoint name="mh_right_upper_arm_free"/>
+      <inertial pos="0 0 0" mass="0.001" diaginertia="0.001 0.001 0.001"/>
+      <geom mesh="mh_right_upper_arm"/>
+    </body>
+    <body name="mh_left_forearm">
+      <freejoint name="mh_left_forearm_free"/>
+      <inertial pos="0 0 0" mass="0.001" diaginertia="0.001 0.001 0.001"/>
+      <geom mesh="mh_left_forearm"/>
+    </body>
+    <body name="mh_right_forearm">
+      <freejoint name="mh_right_forearm_free"/>
+      <inertial pos="0 0 0" mass="0.001" diaginertia="0.001 0.001 0.001"/>
+      <geom mesh="mh_right_forearm"/>
+    </body>
+  </worldbody>
+</mujoco>
