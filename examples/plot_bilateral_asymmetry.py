@@ -9,16 +9,19 @@ from pathlib import Path
 import matplotlib
 
 matplotlib.use("Agg")
+
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.lines import Line2D
 
 from loaded_cmj.dataset import load_trial
+import plot_observables as plotting
 
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def _event_time(trial: dict, key: str) -> float:
+def _event_time(trial: dict[str, object], key: str) -> float:
     value = trial["observed_events"].get(key)
     if value is None:
         raise ValueError(f"missing {key} in {trial['trial_id']}")
@@ -42,74 +45,85 @@ def main(argv: list[str] | None = None) -> None:
     time_s = np.asarray(asym_obs["time_s"], dtype=float)
 
     fig, (force_ax, impulse_ax) = plt.subplots(
-        2,
-        1,
-        figsize=(11.0, 6.8),
-        sharex=False,
-        gridspec_kw={"height_ratios": [3.2, 1.25]},
-        constrained_layout=True,
+        2, 1, figsize=(13, 7.4), sharex=False,
+        gridspec_kw={"height_ratios": [3.2, 1.25]}, constrained_layout=True,
     )
-    fig.patch.set_facecolor("#10141c")
+    fig.patch.set_facecolor(plotting.BACKGROUND)
     for ax in (force_ax, impulse_ax):
-        ax.set_facecolor("#10141c")
-        ax.tick_params(colors="#d7dde8", labelsize=9)
-        for spine in ax.spines.values():
-            spine.set_color("#475263")
-        ax.grid(True, color="#2a3342", linewidth=0.65, alpha=0.7)
+        plotting._style_axis(ax, "")
 
     left = np.asarray(asym_obs["fz_left_N"], dtype=float)
     right = np.asarray(asym_obs["fz_right_N"], dtype=float)
     nominal_left = np.asarray(nominal_obs["fz_left_N"], dtype=float)
     nominal_right = np.asarray(nominal_obs["fz_right_N"], dtype=float)
-    force_ax.plot(time_s, left, color="#55c7e8", linewidth=1.8, label="asymmetric left GRF")
-    force_ax.plot(time_s, right, color="#f2a65a", linewidth=1.8, label="asymmetric right GRF")
-    force_ax.plot(time_s, nominal_left, color="#55c7e8", linewidth=0.9, linestyle="--", alpha=0.6, label="nominal left GRF")
-    force_ax.plot(time_s, nominal_right, color="#f2a65a", linewidth=0.9, linestyle="--", alpha=0.6, label="nominal right GRF")
+    nominal_time = np.asarray(nominal_obs["time_s"], dtype=float)
+    markevery = max(1, len(time_s) // 18)
+    force_ax.plot(
+        time_s, left, color=plotting.COLORS["left"], linewidth=2.0,
+        marker="o", markevery=markevery, markersize=3.2,
+        markerfacecolor=plotting.BACKGROUND, markeredgecolor=plotting.COLORS["left"],
+        markeredgewidth=0.8, label="asymmetry",
+    )
+    force_ax.plot(
+        time_s, right, color=plotting.COLORS["right"], linewidth=2.0,
+        marker="s", markevery=markevery, markersize=3.0,
+        markerfacecolor=plotting.BACKGROUND, markeredgecolor=plotting.COLORS["right"],
+        markeredgewidth=0.8,
+    )
+    force_ax.plot(nominal_time, nominal_left, color=plotting.COLORS["left"], linewidth=1.15, linestyle="--", alpha=0.62)
+    force_ax.plot(nominal_time, nominal_right, color=plotting.COLORS["right"], linewidth=1.15, linestyle="--", alpha=0.62)
 
     onset = _event_time(asymmetry, "movement_onset_time_s")
     takeoff = _event_time(asymmetry, "takeoff_time_s")
-    landing = float(asymmetry["observed_events"].get("landing_time_s", 2.58))
-    force_ax.axvspan(0.0, onset, color="#667085", alpha=0.08)
-    force_ax.axvspan(onset, takeoff, color="#e9c46a", alpha=0.08)
-    force_ax.axvspan(takeoff, landing, color="#6bc7a5", alpha=0.08)
+    landing_value = asymmetry["observed_events"].get("landing_time_s")
+    landing = float(landing_value) if landing_value is not None else 2.58
+    force_ax.axvspan(0.0, onset, color=plotting.PHASE_COLORS[0], alpha=0.06, linewidth=0)
+    force_ax.axvspan(onset, takeoff, color=plotting.PHASE_COLORS[2], alpha=0.06, linewidth=0)
+    force_ax.axvspan(takeoff, landing, color=plotting.PHASE_COLORS[4], alpha=0.06, linewidth=0)
+    force_ax.axvline(onset, color=plotting.EVENT_COLORS["movement_onset_time_s"], linewidth=0.95, linestyle=(0, (3, 2)))
+    force_ax.axvline(takeoff, color=plotting.EVENT_COLORS["takeoff_time_s"], linewidth=0.95, linestyle=(0, (3, 2)))
+    force_ax.axvline(landing, color=plotting.EVENT_COLORS["landing_time_s"], linewidth=0.95, linestyle=(0, (3, 2)))
     for event_time, label, color in (
-        (onset, "onset", "#e9c46a"),
-        (takeoff, "takeoff", "#6bc7a5"),
-        (landing, "landing", "#e76f51"),
+        (onset, "onset", plotting.EVENT_COLORS["movement_onset_time_s"]),
+        (takeoff, "takeoff", plotting.EVENT_COLORS["takeoff_time_s"]),
+        (landing, "landing", plotting.EVENT_COLORS["landing_time_s"]),
     ):
-        force_ax.axvline(event_time, color=color, linewidth=1.0, alpha=0.9)
-        force_ax.text(event_time + 0.018, 0.96, label, transform=force_ax.get_xaxis_transform(), color=color, fontsize=9, va="top")
-    force_ax.set_title(
-        "Fixed 20 kg loaded CMJ — bilateral force-platform qualification (alpha = 0.02)",
-        color="#f3f5f7",
-        fontsize=13,
-        loc="left",
-        pad=10,
-    )
-    force_ax.set_ylabel("Vertical force (N)", color="#d7dde8")
-    force_ax.legend(loc="upper left", ncol=2, frameon=False, fontsize=8.5, labelcolor="#d7dde8")
+        force_ax.text(event_time, 0.04, label, transform=force_ax.get_xaxis_transform(), color=color,
+                      fontsize=8, va="bottom", ha="left", rotation=90)
+    force_ax.set_title("Fixed 20 kg loaded CMJ — bilateral force-platform qualification (α = 0.02)",
+                       color=plotting.TEXT, fontsize=13, loc="left", pad=10)
+    force_ax.set_ylabel("vertical force (N)", color=plotting.TEXT)
     force_ax.set_xlim(float(time_s[0]), float(time_s[-1]))
+    force_ax.set_ylim(*plotting._limits(np.r_[left, right, nominal_left, nominal_right]))
+    plotting._add_legend(force_ax, [
+        Line2D([], [], color=plotting.COLORS["left"], linewidth=2, marker="o", markersize=4,
+               markerfacecolor=plotting.BACKGROUND, label="Left"),
+        Line2D([], [], color=plotting.COLORS["right"], linewidth=2, marker="s", markersize=4,
+               markerfacecolor=plotting.BACKGROUND, label="Right"),
+    ], "SIDE")
+    plotting._add_legend(force_ax, [
+        Line2D([], [], color=plotting.TEXT, linewidth=2, label="α = 0.02 synthetic condition"),
+        Line2D([], [], color=plotting.TEXT, linewidth=1.1, linestyle="--", alpha=0.65, label="Nominal reference"),
+    ], "CONDITION", loc="upper right")
 
     bilateral = asymmetry["bilateral_measurements"]
-    labels = ["braking", "propulsive"]
+    labels = ["Braking", "Propulsive"]
     left_impulses = [bilateral["left_braking_impulse_Ns"], bilateral["left_propulsive_impulse_Ns"]]
     right_impulses = [bilateral["right_braking_impulse_Ns"], bilateral["right_propulsive_impulse_Ns"]]
     x = np.arange(len(labels), dtype=float)
     width = 0.34
-    impulse_ax.bar(x - width / 2, left_impulses, width, color="#55c7e8", label="left")
-    impulse_ax.bar(x + width / 2, right_impulses, width, color="#f2a65a", label="right")
+    impulse_ax.bar(x - width / 2, left_impulses, width, color=plotting.COLORS["left"], label="left")
+    impulse_ax.bar(x + width / 2, right_impulses, width, color=plotting.COLORS["right"], label="right")
     impulse_ax.set_xticks(x, labels)
-    impulse_ax.set_ylabel("Impulse (N·s)", color="#d7dde8")
-    impulse_ax.set_title(
-        "Direct side-specific event-window impulses; no normalized clinical index",
-        color="#d7dde8",
-        fontsize=10,
-        loc="left",
-        pad=7,
-    )
-    impulse_ax.legend(frameon=False, fontsize=8.5, labelcolor="#d7dde8", loc="upper left")
+    impulse_ax.set_ylabel("impulse (N·s)", color=plotting.TEXT)
+    impulse_ax.set_title("Direct side-specific event-window impulses; no normalized clinical index",
+                         color=plotting.TEXT, fontsize=10, loc="left", pad=7)
+    impulse_ax.legend(frameon=False, fontsize=8.5, labelcolor=plotting.TEXT, loc="upper left")
+    impulse_ax.set_xlabel("phase window", color=plotting.TEXT)
 
-    fig.savefig(output, dpi=180, facecolor=fig.get_facecolor())
+    fig.text(0.995, 0.006, "20kg_bilateral_asymmetry | fixed 20 kg | direct synthetic measurements",
+             ha="right", va="bottom", color=plotting.MUTED, fontsize=7)
+    fig.savefig(output, dpi=180, facecolor=plotting.BACKGROUND, edgecolor=plotting.BACKGROUND)
     plt.close(fig)
     print(json.dumps({"output": str(output), "resolution": "1980x1224", "alpha": 0.02}))
 

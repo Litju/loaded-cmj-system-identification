@@ -47,9 +47,9 @@ unit analysis are available for every qualified condition:
 
 Cross-scenario figures are in [`media/comparison/`](media/comparison/). The
 combined GRF/COM/LPT figure keeps force, COM, and bar/LPT channels in their
-native units using separate axes; the LPT channels remain bar measurements, not
-COM measurements. Read the [visualization contract](docs/visualization.md) for
-the plot-family and render-lineage details.
+native units using synchronized panels; the LPT channels remain bar
+measurements, not COM measurements. Read the [visualization contract](docs/visualization.md)
+for the semantic plot grammar and render-lineage details.
 
 ## Public experiment
 
@@ -139,7 +139,7 @@ python -m pytest
 python examples/simulate.py
 python examples/identify.py
 python examples/validate.py
-python examples/generate_media_suite.py
+python examples/generate_media_suite.py --reuse-renders
 ```
 
 Media generation requires an `ffmpeg` executable and a MuJoCo OpenGL backend.
@@ -157,11 +157,11 @@ full public splits.
 `src/loaded_cmj/rendering.py` captures the live post-step MuJoCo state and
 composes the MakeHuman body, bar, plate, LPT device/tether, exact COM marker,
 bilateral force traces, bar/LPT trace, phase strip, event markers, joint
-kinematics, and metric panels. The plotting example keeps kinetics separate
-from kinematics, except for the explicitly combined force-plate/bar-LPT
-measurement figure. All figures use the source-defined CMJ phase timing as
-translucent background bands. The MakeHuman scene is render-only: it is posed
-from live plant landmarks but is never stepped for physics.
+kinematics, and metric panels. `examples/plot_observables.py` uses a fixed
+semantic palette, model/observed marker grammar, side line styles, synchronized
+native-unit panels, a lower-limb small-multiple matrix, and a six-lane contact
+raster. The MakeHuman scene is render-only: it is posed from live plant
+landmarks but is never stepped for physics.
 
 ## Repository structure
 

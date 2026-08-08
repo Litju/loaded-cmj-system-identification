@@ -1,15 +1,15 @@
-"""Generate separated scientific plots from one authoritative CMJ rollout.
+"""Render the publication static figures from one authoritative rollout.
 
-This module is deliberately a plotting layer.  Every plotted series is read
-directly from ``result["traces"]``, ``result["summary"]``, or the public trial
-observations.  It does not derive new measurements, resample signals, or run a
-second model.  The phase bands use the source phase timing already returned by
-the rollout.
+This module is presentation-only.  It reads rollout traces, scalar summaries,
+events, phases, and public observations without changing, resampling, or
+recomputing scientific measurements.  The palette encodes physical channels;
+line style encodes side where appropriate; sparse markers encode observations.
 """
 
 from __future__ import annotations
 
 import argparse
+from collections import defaultdict
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -18,7 +18,9 @@ import matplotlib
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle
+import numpy as np
+from matplotlib.lines import Line2D
+from matplotlib.patches import Patch
 
 from loaded_cmj.dataset import load_trial
 from loaded_cmj.parameters import load_named_parameters
@@ -31,42 +33,217 @@ MEDIA = ROOT / "media"
 OUTPUT_DIR = MEDIA
 SCENARIO_ID = "20kg_nominal_a"
 
-# High-contrast dark scientific dashboard palette.  The two signal sources are
-# intentionally fixed across every figure: observed = light blue, MuJoCo =
-# yellow dotted line.  Phase colors are muted so they remain a background cue.
-BACKGROUND = "#000000"
-PANEL = "#050505"
-TEXT = "#e8edf2"
-MUTED = "#9aa6b2"
-GRID = "#2b333b"
-SPINE = "#65717d"
-OBSERVED = "#8bdcff"
-MUJOCO = "#f4d35e"
-MUJOCO_DIM = "#d9bb4b"
-GRF_RIGHT_AMBER = "#f0a202"
-GRF_TOTAL_RED = "#ef476f"
-NET_GRF_PURPLE = "#c77dff"
-LPT_VELOCITY_GREEN = "#43aa8b"
-LPT_VELOCITY_OBSERVED = "#9fe5d0"
-COM_ORANGE = "#ff9f43"
-LPT_DISPLACEMENT_MAGENTA = "#e056fd"
-LPT_DISPLACEMENT_OBSERVED = "#f3b5ff"
-LPT_TETHER_PURPLE = "#b388ff"
-EVENT = "#f2f2f2"
+# One publication palette.  Color identifies the physical channel or region;
+# source and side are carried by independent geometric channels.
+BACKGROUND = "#0B1118"
+PANEL = "#101720"
+TEXT = "#F2F4F8"
+MUTED = "#B7BDC8"
+GRID = "#34404C"
+SPINE = "#6B7785"
+EVENT = "#F2F4F8"
+
+BLUE = "#0072B2"                 # hip / generic model channel
+SKY_BLUE = "#56B4E9"             # left side / trunk / left plate
+GREEN = "#009E73"                 # ankle / forefoot / velocity
+ORANGE = "#E69F00"               # right side / MTP / toe
+VERMILLION = "#D55E00"           # knee
+PURPLE = "#CC79A7"               # rocker / displacement
+WARM_GOLD = "#F0C75E"             # COM
+OFF_WHITE = "#F2F4F8"             # aggregate / total
+NET = "#9B8AFB"                  # net GRF
+AUX_SHOULDER = "#B7BDC8"
+AUX_ELBOW = "#7E8A97"
+
+COLORS = {
+    "hip": BLUE,
+    "knee": VERMILLION,
+    "ankle": GREEN,
+    "rocker": PURPLE,
+    "mtp": ORANGE,
+    "lumbar": SKY_BLUE,
+    "shoulder": AUX_SHOULDER,
+    "elbow": AUX_ELBOW,
+    "heel": BLUE,
+    "forefoot": GREEN,
+    "toe": ORANGE,
+    "left": SKY_BLUE,
+    "right": ORANGE,
+    "total": OFF_WHITE,
+    "net": NET,
+    "com": WARM_GOLD,
+    "lpt_displacement": PURPLE,
+    "lpt_velocity": GREEN,
+    "tether": MUTED,
+    "root": SKY_BLUE,
+    "bar": ORANGE,
+}
+
 PHASE_COLORS = (
-    "#355070",  # weighing
-    "#6d597a",  # unweighting
-    "#9c6644",  # braking
-    "#c8962e",  # propulsion
-    "#245c8f",  # flight
-    "#6941a5",  # landing absorption
-    "#27766f",  # stabilization
+    "#28506D",  # weighing
+    "#5E4268",  # unweighting
+    "#7E4D36",  # braking
+    "#876D24",  # propulsion
+    "#244B6B",  # flight
+    "#553675",  # landing absorption
+    "#245E58",  # stabilization
 )
-EVENT_NAMES = (
-    ("movement_onset_time_s", "onset"),
-    ("takeoff_time_s", "takeoff"),
-    ("landing_time_s", "landing"),
+EVENT_COLORS = {
+    "movement_onset_time_s": WARM_GOLD,
+    "takeoff_time_s": SKY_BLUE,
+    "landing_time_s": VERMILLION,
+}
+EVENT_LABELS = {
+    "movement_onset_time_s": "onset",
+    "takeoff_time_s": "takeoff",
+    "landing_time_s": "landing",
+}
+
+COMMON_PLOT_FAMILY = (
+    "observable_fit.png",
+    "combined_grf_com_lpt.png",
+    "force_plate_metrics.png",
+    "global_kinematics.png",
+    "foot_kinematics.png",
+    "joint_kinematics.png",
+    "auxiliary_kinematics.png",
+    "contact_mechanics.png",
+    "phase_events.png",
+    "summary_metrics.png",
 )
+
+
+def _finite(values: Iterable[Any]) -> np.ndarray:
+    """Return finite numeric values, preserving source values otherwise."""
+
+    out: list[float] = []
+    for value in values:
+        if value is None:
+            continue
+        try:
+            number = float(value)
+        except (TypeError, ValueError):
+            continue
+        if np.isfinite(number):
+            out.append(number)
+    return np.asarray(out, dtype=float)
+
+
+def _limits(values: Iterable[Any], *, padding: float = 0.06) -> tuple[float, float] | None:
+    data = _finite(values)
+    if data.size == 0:
+        return None
+    low = float(np.min(data))
+    high = float(np.max(data))
+    span = high - low
+    pad = max(span * padding, abs(low) * 0.02, abs(high) * 0.02, 1e-6)
+    if span == 0.0:
+        pad = max(abs(low) * 0.08, 0.02)
+    return low - pad, high + pad
+
+
+def _add_scale(scales: dict[str, list[float]], group: str, values: Iterable[Any]) -> None:
+    values_array = _finite(values)
+    if values_array.size:
+        scales[group].extend(values_array.tolist())
+
+
+def build_scale_context(scenarios: Iterable[dict[str, Any]]) -> dict[str, tuple[float, float]]:
+    """Build complete-release display limits from all supplied frozen scenarios."""
+
+    values: dict[str, list[float]] = defaultdict(list)
+    for entry in scenarios:
+        result = entry.get("result", entry)
+        trial = entry.get("trial", {})
+        traces = result.get("traces", {})
+        observed = trial.get("observations", {})
+        for key in ("fz_left_N", "fz_right_N", "fz_total_N", "total_fz_N", "fnet_N"):
+            _add_scale(values, "force_N", traces.get(key, []))
+        for key in ("fz_left_N", "fz_right_N", "fz_total_N"):
+            _add_scale(values, "force_N", observed.get(key, []))
+        _add_scale(values, "lpt_displacement_m", traces.get("bar_displacement_m", []))
+        _add_scale(values, "lpt_displacement_m", observed.get("bar_displacement_m", []))
+        _add_scale(values, "lpt_velocity_m_s", traces.get("bar_velocity_m_s", []))
+        _add_scale(values, "lpt_velocity_m_s", observed.get("bar_velocity_m_s", []))
+        _add_scale(values, "com_z_m", traces.get("com_z_m", []))
+        for key in ("root_x_m", "com_x_m"):
+            _add_scale(values, "horizontal_position_m", traces.get(key, []))
+        for key in ("root_z_m", "com_z_m"):
+            _add_scale(values, "vertical_position_m", traces.get(key, []))
+        for key in ("bar_z_m", "bar_displacement_m"):
+            _add_scale(values, "bar_position_m", traces.get(key, []))
+        for key in ("root_x_velocity_m_s", "root_z_velocity_m_s", "bar_velocity_m_s"):
+            _add_scale(values, "velocity_m_s", traces.get(key, []))
+        for key in (
+            "left_heel_z_m", "left_forefoot_z_m", "left_toe_z_m",
+            "right_heel_z_m", "right_forefoot_z_m", "right_toe_z_m",
+        ):
+            _add_scale(values, "foot_height_m", traces.get(key, []))
+        _add_scale(values, "foot_clearance_m", traces.get("foot_clearance_m", []))
+        for joint in ("hip", "knee", "ankle", "rocker", "mtp"):
+            position_keys = (
+                (f"left_{joint}_rad", f"right_{joint}_rad")
+                if joint in {"hip", "knee", "ankle"}
+                else (f"left_forefoot_rocker_rad", f"right_forefoot_rocker_rad")
+                if joint == "rocker"
+                else ("left_mtp_rad", "right_mtp_rad")
+            )
+            velocity_keys = (
+                (f"left_{joint}_velocity_rad_s", f"right_{joint}_velocity_rad_s")
+                if joint in {"hip", "knee", "ankle"}
+                else ("left_forefoot_rocker_velocity_rad_s", "right_forefoot_rocker_velocity_rad_s")
+                if joint == "rocker"
+                else ("left_mtp_velocity_rad_s", "right_mtp_velocity_rad_s")
+            )
+            for key in position_keys:
+                _add_scale(values, f"{joint}_position_rad", traces.get(key, []))
+            for key in velocity_keys:
+                _add_scale(values, f"{joint}_velocity_rad_s", traces.get(key, []))
+        for key in (
+            "left_heel_fz_N", "left_forefoot_fz_N", "left_toe_fz_N",
+            "right_heel_fz_N", "right_forefoot_fz_N", "right_toe_fz_N",
+        ):
+            _add_scale(values, "regional_fz_N", traces.get(key, []))
+        for key in (
+            "left_heel_fx_N", "left_forefoot_fx_N", "left_toe_fx_N",
+            "right_heel_fx_N", "right_forefoot_fx_N", "right_toe_fx_N",
+        ):
+            _add_scale(values, "regional_fx_N", traces.get(key, []))
+        _add_scale(values, "cop_x_m", traces.get("cop_x_m", []))
+        for key in ("left_slip_vx_m_s", "right_slip_vx_m_s"):
+            _add_scale(values, "slip_m_s", traces.get(key, []))
+        for key in ("lpt_tether_force_N",):
+            _add_scale(values, "tether_N", traces.get(key, []))
+        for key in ("bar_rack_x_m", "bar_rack_z_m"):
+            _add_scale(values, "bar_rack_translation_m", traces.get(key, []))
+        for key in ("bar_rack_x_velocity_m_s", "bar_rack_z_velocity_m_s"):
+            _add_scale(values, "bar_rack_translation_velocity_m_s", traces.get(key, []))
+        for key in ("lumbar_pitch_rad", "bar_rack_pitch_rad"):
+            _add_scale(values, "pitch_rad", traces.get(key, []))
+        for key in ("lumbar_pitch_rate_rad_s", "bar_rack_pitch_velocity_rad_s"):
+            _add_scale(values, "pitch_rate_rad_s", traces.get(key, []))
+        for key in ("left_shoulder_rad", "right_shoulder_rad", "left_elbow_rad", "right_elbow_rad"):
+            _add_scale(values, "upper_angles_rad", traces.get(key, []))
+        for key in (
+            "left_shoulder_velocity_rad_s", "right_shoulder_velocity_rad_s",
+            "left_elbow_velocity_rad_s", "right_elbow_velocity_rad_s",
+        ):
+            _add_scale(values, "upper_rates_rad_s", traces.get(key, []))
+        _add_scale(values, "time_s", traces.get("time_s", []))
+
+    context: dict[str, tuple[float, float]] = {}
+    for name, data in values.items():
+        limit = _limits(data)
+        if limit is not None:
+            context[name] = limit
+    if "time_s" in context:
+        data = values["time_s"]
+        context["time_s"] = (float(min(data)), float(max(data)))
+    return context
+
+
+def _limit(scales: dict[str, tuple[float, float]], group: str, values: Iterable[Any]) -> tuple[float, float] | None:
+    return scales.get(group) or _limits(values)
 
 
 def _configure_style() -> None:
@@ -78,660 +255,617 @@ def _configure_style() -> None:
         "text.color": TEXT,
         "axes.labelcolor": TEXT,
         "axes.edgecolor": SPINE,
-        "xtick.color": MUTED,
-        "ytick.color": MUTED,
         "font.size": 9,
-        "axes.titlesize": 11,
+        "axes.titlesize": 10.5,
         "axes.titleweight": "bold",
         "legend.fontsize": 8,
+        "legend.title_fontsize": 8,
     })
 
 
-def _style_axis(ax: Any, title: str, ylabel: str | None = None) -> None:
+def _style_axis(ax: Any, title: str, ylabel: str | None = None, *, limits: tuple[float, float] | None = None) -> None:
     ax.set_facecolor(PANEL)
-    ax.set_title(title, loc="left", color=TEXT, pad=8)
+    ax.set_title(title, loc="left", color=TEXT, pad=7)
     if ylabel:
         ax.set_ylabel(ylabel, color=TEXT)
+    if limits is not None:
+        ax.set_ylim(*limits)
     ax.tick_params(axis="both", colors=MUTED, labelsize=8)
     for spine in ax.spines.values():
         spine.set_color(SPINE)
         spine.set_linewidth(0.7)
-    ax.grid(True, color=GRID, alpha=0.52, linewidth=0.55)
+    ax.grid(True, color=GRID, alpha=0.48, linewidth=0.55)
     ax.set_axisbelow(True)
 
 
-def _legend(
-    ax: Any,
-    *,
-    ncol: int = 1,
-    outside: bool = False,
-    loc: str = "upper left",
-) -> None:
-    kwargs = {
-        "loc": loc,
-        "ncol": ncol,
-        "frameon": True,
-        "facecolor": BACKGROUND,
-        "edgecolor": GRID,
-        "framealpha": 0.92,
-        "borderpad": 0.45,
-    }
-    if outside:
-        kwargs.update({"bbox_to_anchor": (1.0, 1.0), "loc": "upper left"})
-    legend = ax.legend(**kwargs)
-    for label in legend.get_texts():
-        label.set_color(TEXT)
+def _style_legend(legend: Any) -> None:
+    legend.get_frame().set_facecolor(BACKGROUND)
+    legend.get_frame().set_edgecolor(GRID)
+    legend.get_frame().set_alpha(0.94)
+    if legend.get_title() is not None:
+        legend.get_title().set_color(MUTED)
+    for text in legend.get_texts():
+        text.set_color(TEXT)
 
 
-def _time_values(result: dict[str, Any]) -> tuple[list[float], dict[str, Any]]:
+def _add_legend(ax: Any, handles: list[Any], title: str, *, loc: str = "upper left", ncol: int = 1) -> Any:
+    previous = ax.get_legend()
+    if previous is not None:
+        ax.add_artist(previous)
+    legend = ax.legend(handles=handles, title=title, loc=loc, ncol=ncol, borderpad=0.42, handlelength=2.0)
+    _style_legend(legend)
+    return legend
+
+
+def _source_handles() -> list[Line2D]:
+    return [
+        Line2D([], [], color=TEXT, linewidth=2.0, label="MuJoCo / model"),
+        Line2D([], [], color=TEXT, linewidth=0.8, marker="o", markersize=4.0,
+               markerfacecolor=BACKGROUND, markeredgewidth=0.9, label="Observed"),
+    ]
+
+
+def _side_handles(*, colors: bool = False) -> list[Line2D]:
+    return [
+        Line2D([], [], color=SKY_BLUE if colors else TEXT, linewidth=2.0, linestyle="-", label="Left"),
+        Line2D([], [], color=ORANGE if colors else TEXT, linewidth=2.0, linestyle="--", label="Right"),
+    ]
+
+
+def _region_handles() -> list[Line2D]:
+    return [
+        Line2D([], [], color=COLORS["heel"], linewidth=2.0, label="Heel"),
+        Line2D([], [], color=COLORS["forefoot"], linewidth=2.0, label="Forefoot"),
+        Line2D([], [], color=COLORS["toe"], linewidth=2.0, label="Toe / MTP"),
+    ]
+
+
+def _joint_handles() -> list[Line2D]:
+    return [
+        Line2D([], [], color=COLORS["hip"], linewidth=2.0, label="Hip"),
+        Line2D([], [], color=COLORS["knee"], linewidth=2.0, label="Knee"),
+        Line2D([], [], color=COLORS["ankle"], linewidth=2.0, label="Ankle"),
+        Line2D([], [], color=COLORS["rocker"], linewidth=2.0, label="Rocker"),
+        Line2D([], [], color=COLORS["mtp"], linewidth=2.0, label="MTP"),
+    ]
+
+
+def _time_values(result: dict[str, Any]) -> tuple[np.ndarray, dict[str, Any]]:
     traces = result["traces"]
-    return [float(value) for value in traces["time_s"]], traces
+    return np.asarray(traces["time_s"], dtype=float), traces
 
 
-def _plot_mujoco(
+def _plot_model(
     ax: Any,
     time_s: Iterable[float],
     values: Iterable[float],
-    label: str,
     *,
+    color: str,
     linestyle: str = "-",
-    alpha: float = 0.96,
-    linewidth: float = 1.05,
-    color: str = MUJOCO,
-) -> None:
-    time = list(time_s)
-    series = list(values)
-    # Marker frequency is a display choice only; the underlying trace is not
-    # decimated or transformed.
-    markevery = max(1, len(series) // 95)
-    ax.plot(
-        time,
-        series,
+    linewidth: float = 1.85,
+    alpha: float = 0.95,
+) -> Any:
+    return ax.plot(
+        np.asarray(list(time_s), dtype=float),
+        np.asarray(list(values), dtype=float),
         color=color,
         linestyle=linestyle,
         linewidth=linewidth,
-        marker="o",
-        markersize=2.0,
-        markevery=markevery,
-        markerfacecolor=color,
-        markeredgecolor=color,
-        markeredgewidth=0.25,
         alpha=alpha,
-        label=label,
         zorder=3,
-    )
+    )[0]
 
 
 def _plot_observed(
     ax: Any,
     time_s: Iterable[float],
     values: Iterable[float],
-    label: str,
     *,
-    linewidth: float = 1.55,
-    color: str = OBSERVED,
-) -> None:
-    ax.plot(
-        list(time_s),
-        list(values),
+    color: str,
+    linewidth: float = 0.72,
+    alpha: float = 0.92,
+) -> Any:
+    time = np.asarray(list(time_s), dtype=float)
+    series = np.asarray(list(values), dtype=float)
+    markevery = max(1, len(series) // 18)
+    return ax.plot(
+        time,
+        series,
         color=color,
-        linewidth=linewidth,
         linestyle="-",
-        label=label,
-        zorder=4,
-    )
+        linewidth=linewidth,
+        marker="o",
+        markersize=3.5,
+        markevery=markevery,
+        markerfacecolor=BACKGROUND,
+        markeredgecolor=color,
+        markeredgewidth=0.9,
+        alpha=alpha,
+        zorder=5,
+    )[0]
 
 
-def _shade_phases(
-    ax: Any,
-    result: dict[str, Any],
-    *,
-    labels: bool = False,
-) -> None:
-    """Show the source's hard-coded CMJ phase dissection behind the traces."""
+def _phase_timing(result: dict[str, Any]) -> dict[str, Any]:
+    return result.get("phase_timing_s", {})
 
-    timing = result.get("phase_timing_s", {})
+
+def _phase_context(ax: Any, result: dict[str, Any], *, labels: bool = False, strong: bool = False) -> None:
+    """Show quiet phase ribbons and clear event lines without filling the plot."""
+
+    timing = _phase_timing(result)
     for index, phase_name in enumerate(PHASE_NAMES):
         start_end = timing.get(phase_name.lower())
         if not start_end:
             continue
-        start, end = (float(start_end[0]), float(start_end[1]))
-        ax.axvspan(
-            start,
-            end,
-            color=PHASE_COLORS[index],
-            alpha=0.19,
-            linewidth=0,
-            zorder=0,
-        )
+        start, end = float(start_end[0]), float(start_end[1])
+        if strong:
+            ax.axvspan(start, end, color=PHASE_COLORS[index], alpha=0.16, linewidth=0, zorder=0)
+        else:
+            ax.fill_between(
+                [start, end], [0.94, 0.94], [0.995, 0.995],
+                transform=ax.get_xaxis_transform(), color=PHASE_COLORS[index],
+                alpha=0.92, linewidth=0, zorder=0,
+            )
         if labels:
             ax.text(
-                (start + end) / 2.0,
-                0.97,
-                phase_name.replace("_", " "),
-                transform=ax.get_xaxis_transform(),
-                color=TEXT,
-                alpha=0.82,
-                fontsize=7.5,
-                ha="center",
-                va="top",
-                rotation=90 if "_" in phase_name else 0,
-                clip_on=True,
-                zorder=1,
+                (start + end) / 2.0, 0.968, phase_name.replace("_", " "),
+                transform=ax.get_xaxis_transform(), color=MUTED,
+                fontsize=7.2, ha="center", va="center", rotation=90 if "_" in phase_name else 0,
+                clip_on=True, zorder=1,
             )
 
-
-def _event_lines(
-    ax: Any,
-    result: dict[str, Any],
-    *,
-    labels: bool = False,
-) -> None:
     events = result.get("events", {})
-    for key, label in EVENT_NAMES:
+    for key, label in EVENT_LABELS.items():
         value = events.get(key)
         if value is None:
             continue
         time_s = float(value)
-        ax.axvline(
-            time_s,
-            color=EVENT,
-            linewidth=0.75,
-            linestyle="--",
-            alpha=0.62,
-            zorder=1,
-        )
+        color = EVENT_COLORS[key]
+        ax.axvline(time_s, color=color, linewidth=0.85, linestyle=(0, (3, 2)), alpha=0.92, zorder=2)
         if labels:
             ax.text(
-                time_s,
-                0.06,
-                label,
-                transform=ax.get_xaxis_transform(),
-                color=EVENT,
-                alpha=0.86,
-                fontsize=7.5,
-                ha="left",
-                va="bottom",
-                rotation=90,
-                clip_on=True,
-                zorder=2,
+                time_s, 0.04, label, transform=ax.get_xaxis_transform(), color=color,
+                fontsize=7.2, ha="left", va="bottom", rotation=90, clip_on=True, zorder=4,
             )
 
 
-def _prepare_axis(ax: Any, result: dict[str, Any], *, labels: bool = False) -> None:
-    _shade_phases(ax, result, labels=labels)
-    _event_lines(ax, result, labels=labels)
+def _set_time_axis(axes: Iterable[Any], scales: dict[str, tuple[float, float]]) -> None:
+    limits = scales.get("time_s")
+    if limits is not None:
+        for ax in axes:
+            ax.set_xlim(*limits)
 
 
 def _finish(fig: Any, filename: str) -> None:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     fig.text(
-        0.995,
-        0.004,
-        f"{SCENARIO_ID} | fixed 20 kg | production rollout",
-        ha="right",
-        va="bottom",
-        color=MUTED,
-        fontsize=7,
+        0.995, 0.006, f"{SCENARIO_ID} | fixed 20 kg | production rollout",
+        ha="right", va="bottom", color=MUTED, fontsize=7,
     )
     fig.savefig(OUTPUT_DIR / filename, dpi=170, facecolor=BACKGROUND, edgecolor=BACKGROUND)
     plt.close(fig)
 
 
-def _combined_measurements(result: dict[str, Any], observed: dict[str, Any]) -> None:
-    """The one intentionally mixed measurement figure: force plates + LPT."""
-
+def _observable_fit(result: dict[str, Any], observed: dict[str, Any], scales: dict[str, tuple[float, float]]) -> None:
     time_s, traces = _time_values(result)
-    observed_time = [float(value) for value in observed["time_s"]]
-    fig, axes = plt.subplots(5, 1, figsize=(13, 13.5), sharex=True, constrained_layout=True)
-    fig.suptitle(
-        "Loaded CMJ measurements — force plates + bar/LPT",
-        color=TEXT,
-        fontsize=14,
-        fontweight="bold",
-    )
+    observed_time = np.asarray(observed["time_s"], dtype=float)
+    fig, axes = plt.subplots(5, 1, figsize=(13, 13), sharex=True, constrained_layout=True)
+    fig.suptitle("Loaded CMJ observable fit — model and observations", color=TEXT, fontsize=14, fontweight="bold")
 
-    _prepare_axis(axes[0], result)
-    _plot_mujoco(axes[0], time_s, traces["fz_left_N"], "MuJoCo left Fz", linestyle="--", alpha=0.72, color=MUJOCO)
-    _plot_mujoco(axes[0], time_s, traces["fz_right_N"], "MuJoCo right Fz", linestyle=":", alpha=0.72, color=GRF_RIGHT_AMBER)
-    _plot_mujoco(axes[0], time_s, traces["fz_total_N"], "MuJoCo total Fz", color=GRF_TOTAL_RED)
-    _plot_observed(axes[0], observed_time, observed["fz_left_N"], "observed left Fz", color="#b7efff", linewidth=1.05)
-    _plot_observed(axes[0], observed_time, observed["fz_right_N"], "observed right Fz", color="#ffd39a", linewidth=1.05)
-    _plot_observed(axes[0], observed_time, observed["fz_total_N"], "observed total Fz", color=OBSERVED)
-    _style_axis(axes[0], "Bilateral force-platform signal", "force (N)")
-    _legend(axes[0], ncol=2)
+    _phase_context(axes[0], result)
+    _plot_model(axes[0], time_s, traces["fz_left_N"], color=COLORS["left"])
+    _plot_model(axes[0], time_s, traces["fz_right_N"], color=COLORS["right"], linestyle="--")
+    _plot_observed(axes[0], observed_time, observed["fz_left_N"], color=COLORS["left"])
+    _plot_observed(axes[0], observed_time, observed["fz_right_N"], color=COLORS["right"])
+    _style_axis(axes[0], "Bilateral force plates", "force (N)", limits=_limit(scales, "force_N", traces["fz_left_N"]))
+    _add_legend(axes[0], _side_handles(colors=True), "SIDE")
+    _add_legend(axes[0], _source_handles(), "SOURCE", loc="upper right")
 
-    _prepare_axis(axes[1], result)
-    _plot_mujoco(axes[1], time_s, traces["fnet_N"], "MuJoCo net GRF", color=NET_GRF_PURPLE)
-    _style_axis(axes[1], "Net ground-reaction force", "net force (N)")
-    _legend(axes[1])
+    _phase_context(axes[1], result)
+    _plot_model(axes[1], time_s, traces["fz_total_N"], color=COLORS["total"], linewidth=2.25)
+    _plot_observed(axes[1], observed_time, observed["fz_total_N"], color=COLORS["total"])
+    _plot_model(axes[1], time_s, traces["fnet_N"], color=COLORS["net"], linestyle="--")
+    _style_axis(axes[1], "Total and net ground-reaction force", "force (N)", limits=_limit(scales, "force_N", traces["fz_total_N"]))
+    _add_legend(axes[1], _source_handles(), "SOURCE")
+    _add_legend(axes[1], [Line2D([], [], color=OFF_WHITE, linewidth=2.2, label="Total Fz"),
+                          Line2D([], [], color=NET, linewidth=1.8, linestyle="--", label="Net GRF")],
+                "CHANNEL", loc="upper right")
 
-    _prepare_axis(axes[2], result)
-    _plot_mujoco(axes[2], time_s, traces["bar_displacement_m"], "MuJoCo bar displacement", color=LPT_DISPLACEMENT_MAGENTA)
-    _plot_observed(axes[2], observed_time, observed["bar_displacement_m"], "observed bar displacement", color=LPT_DISPLACEMENT_OBSERVED)
-    _style_axis(axes[2], "Bar/LPT displacement — bar displacement, not COM displacement", "m")
-    _legend(axes[2])
+    _phase_context(axes[2], result)
+    _plot_model(axes[2], time_s, traces["bar_displacement_m"], color=COLORS["lpt_displacement"])
+    _plot_observed(axes[2], observed_time, observed["bar_displacement_m"], color=COLORS["lpt_displacement"])
+    _style_axis(axes[2], "Bar/LPT displacement — bar displacement, not COM displacement", "displacement (m)",
+                limits=_limit(scales, "lpt_displacement_m", traces["bar_displacement_m"]))
+    _add_legend(axes[2], _source_handles(), "SOURCE", loc="upper right")
 
-    _prepare_axis(axes[3], result)
-    _plot_mujoco(axes[3], time_s, traces["bar_velocity_m_s"], "MuJoCo bar velocity", color=LPT_VELOCITY_GREEN)
-    _plot_observed(axes[3], observed_time, observed["bar_velocity_m_s"], "observed bar velocity", color=LPT_VELOCITY_OBSERVED)
-    _style_axis(axes[3], "Bar/LPT velocity", "velocity (m/s)")
-    _legend(axes[3], loc="lower right")
+    _phase_context(axes[3], result)
+    _plot_model(axes[3], time_s, traces["bar_velocity_m_s"], color=COLORS["lpt_velocity"])
+    _plot_observed(axes[3], observed_time, observed["bar_velocity_m_s"], color=COLORS["lpt_velocity"])
+    _style_axis(axes[3], "Bar/LPT velocity", "velocity (m/s)", limits=_limit(scales, "lpt_velocity_m_s", traces["bar_velocity_m_s"]))
+    _add_legend(axes[3], _source_handles(), "SOURCE", loc="lower right")
 
-    _prepare_axis(axes[4], result, labels=True)
-    _plot_mujoco(axes[4], time_s, traces["lpt_tether_force_N"], "MuJoCo LPT tether force", color=LPT_TETHER_PURPLE)
-    _style_axis(axes[4], "LPT tether diagnostic", "force (N)")
+    _phase_context(axes[4], result, labels=True)
+    _plot_model(axes[4], time_s, traces["lpt_tether_force_N"], color=COLORS["tether"])
+    _style_axis(axes[4], "LPT tether diagnostic", "force (N)", limits=_limit(scales, "tether_N", traces["lpt_tether_force_N"]))
+    _add_legend(axes[4], [Line2D([], [], color=COLORS["tether"], linewidth=2, label="MuJoCo / model")], "SOURCE", loc="lower right")
     axes[4].set_xlabel("time (s)", color=TEXT)
-    _legend(axes[4], loc="lower right")
-    for ax in axes:
-        ax.set_xlim(time_s[0], time_s[-1])
+    _set_time_axis(axes, scales)
     _finish(fig, "observable_fit.png")
 
 
-def _combined_grf_com_lpt(result: dict[str, Any], observed: dict[str, Any]) -> None:
-    """One plotting axes combining GRFs, COM-z, and both LPT channels."""
-
+def _combined_grf_com_lpt(result: dict[str, Any], observed: dict[str, Any], scales: dict[str, tuple[float, float]]) -> None:
     time_s, traces = _time_values(result)
-    observed_time = [float(value) for value in observed["time_s"]]
-    fig, host = plt.subplots(1, 1, figsize=(16, 8), constrained_layout=False)
-    figure_title = "Loaded CMJ — GRFs, COM displacement, and LPT channels (single axes)"
+    observed_time = np.asarray(observed["time_s"], dtype=float)
+    fig, axes = plt.subplots(4, 1, figsize=(13, 10.5), sharex=True, constrained_layout=True)
+    fig.suptitle("Loaded CMJ — synchronized GRF, COM, and LPT channels", color=TEXT, fontsize=14, fontweight="bold")
 
-    # Four native-unit y-scales share one physical plotting rectangle.  A
-    # single y-scale would compress the metre and m/s channels beneath the
-    # several-kilonewton GRF, while normalization would change the displayed
-    # semantics.  Multiple y-axes preserve the original values exactly.
-    com_axis = host.twinx()
-    velocity_axis = host.twinx()
-    displacement_axis = host.twinx()
-    for axis in (com_axis, velocity_axis, displacement_axis):
-        axis.patch.set_visible(False)
-        axis.grid(False)
-        axis.spines["top"].set_visible(False)
-        axis.spines["left"].set_visible(False)
-    velocity_axis.spines["right"].set_position(("outward", 62))
-    displacement_axis.spines["right"].set_position(("outward", 124))
+    _phase_context(axes[0], result)
+    _plot_model(axes[0], time_s, traces["fz_total_N"], color=COLORS["total"], linewidth=2.45)
+    _plot_observed(axes[0], observed_time, observed["fz_total_N"], color=COLORS["total"])
+    _plot_model(axes[0], time_s, traces["fnet_N"], color=COLORS["net"], linestyle="--")
+    _style_axis(axes[0], "GRF", "force (N)", limits=_limit(scales, "force_N", traces["fz_total_N"]))
+    _add_legend(axes[0], _source_handles(), "SOURCE")
 
-    _prepare_axis(host, result, labels=True)
-    _plot_mujoco(host, time_s, traces["fz_left_N"], "MuJoCo left GRF", linestyle="--", alpha=0.72, color=MUJOCO)
-    _plot_mujoco(host, time_s, traces["fz_right_N"], "MuJoCo right GRF", linestyle=":", alpha=0.72, color=GRF_RIGHT_AMBER)
-    _plot_mujoco(host, time_s, traces["fz_total_N"], "MuJoCo total GRF", color=GRF_TOTAL_RED)
-    _plot_observed(host, observed_time, observed["fz_total_N"], "observed total GRF", color=OBSERVED)
-    _style_axis(host, "Force-platform GRFs + COM + LPT (native scales)", "GRF (N)")
+    _phase_context(axes[1], result)
+    _plot_model(axes[1], time_s, traces["com_z_m"], color=COLORS["com"], linewidth=2.0)
+    _style_axis(axes[1], "Centre of mass vertical position", "position (m)", limits=_limit(scales, "com_z_m", traces["com_z_m"]))
+    _add_legend(axes[1], [Line2D([], [], color=COLORS["com"], linewidth=2, label="MuJoCo / model")], "SOURCE")
 
-    _plot_mujoco(com_axis, time_s, traces["com_z_m"], "MuJoCo COM z", color=COM_ORANGE)
-    _plot_mujoco(velocity_axis, time_s, traces["bar_velocity_m_s"], "MuJoCo LPT/bar velocity", color=LPT_VELOCITY_GREEN)
-    _plot_observed(velocity_axis, observed_time, observed["bar_velocity_m_s"], "observed LPT/bar velocity", color=LPT_VELOCITY_OBSERVED)
-    _plot_mujoco(
-        displacement_axis,
-        time_s,
-        traces["bar_displacement_m"],
-        "MuJoCo LPT/bar displacement",
-        color=LPT_DISPLACEMENT_MAGENTA,
-    )
-    _plot_observed(
-        displacement_axis,
-        observed_time,
-        observed["bar_displacement_m"],
-        "observed LPT/bar displacement",
-        color=LPT_DISPLACEMENT_OBSERVED,
-    )
+    _phase_context(axes[2], result)
+    _plot_model(axes[2], time_s, traces["bar_displacement_m"], color=COLORS["lpt_displacement"], linewidth=2.0)
+    _plot_observed(axes[2], observed_time, observed["bar_displacement_m"], color=COLORS["lpt_displacement"])
+    _style_axis(axes[2], "Bar/LPT displacement — bar displacement, not COM displacement", "displacement (m)",
+                limits=_limit(scales, "lpt_displacement_m", traces["bar_displacement_m"]))
+    _add_legend(axes[2], _source_handles(), "SOURCE")
 
-    for axis, label, color in (
-        (host, "GRF (N)", TEXT),
-        (com_axis, "COM z (m)", COM_ORANGE),
-        (velocity_axis, "LPT velocity (m/s)", LPT_VELOCITY_GREEN),
-        (displacement_axis, "LPT displacement (m)", LPT_DISPLACEMENT_MAGENTA),
-    ):
-        axis.set_ylabel(label, color=color)
-        axis.tick_params(axis="y", colors=color, labelsize=8)
-        axis.spines["right"].set_color(color) if axis is not host else axis.spines["left"].set_color(color)
-        axis.spines["right"].set_linewidth(0.8) if axis is not host else axis.spines["left"].set_linewidth(0.8)
-    host.set_xlabel("time (s)", color=TEXT)
-    host.set_xlim(time_s[0], time_s[-1])
-
-    all_handles = []
-    all_labels = []
-    for axis in (host, com_axis, velocity_axis, displacement_axis):
-        handles, labels = axis.get_legend_handles_labels()
-        all_handles.extend(handles)
-        all_labels.extend(labels)
-    legend = host.legend(
-        all_handles,
-        all_labels,
-        loc="upper center",
-        bbox_to_anchor=(0.50, 1.16),
-        ncol=4,
-        frameon=True,
-        facecolor=BACKGROUND,
-        edgecolor=GRID,
-        framealpha=0.92,
-        borderpad=0.45,
-    )
-    for label in legend.get_texts():
-        label.set_color(TEXT)
-    fig.subplots_adjust(left=0.08, right=0.78, bottom=0.12, top=0.78)
-    fig.text(
-        0.50,
-        0.975,
-        figure_title,
-        color=TEXT,
-        fontsize=14,
-        fontweight="bold",
-        ha="center",
-        va="top",
-    )
+    _phase_context(axes[3], result, labels=True)
+    _plot_model(axes[3], time_s, traces["bar_velocity_m_s"], color=COLORS["lpt_velocity"], linewidth=2.0)
+    _plot_observed(axes[3], observed_time, observed["bar_velocity_m_s"], color=COLORS["lpt_velocity"])
+    _style_axis(axes[3], "Bar/LPT velocity", "velocity (m/s)", limits=_limit(scales, "lpt_velocity_m_s", traces["bar_velocity_m_s"]))
+    _add_legend(axes[3], _source_handles(), "SOURCE", loc="lower right")
+    axes[3].set_xlabel("time (s)", color=TEXT)
+    _set_time_axis(axes, scales)
     _finish(fig, "combined_grf_com_lpt.png")
 
 
-def _force_plate_metrics(result: dict[str, Any], observed: dict[str, Any]) -> None:
+def _force_plate_metrics(result: dict[str, Any], observed: dict[str, Any], scales: dict[str, tuple[float, float]]) -> None:
     time_s, traces = _time_values(result)
+    observed_time = np.asarray(observed["time_s"], dtype=float)
     fig, axes = plt.subplots(4, 1, figsize=(13, 11.5), sharex=True, constrained_layout=True)
-    fig.suptitle("Loaded CMJ force-platform metrics", color=TEXT, fontsize=14, fontweight="bold")
+    fig.suptitle("Loaded CMJ force-plate mechanics", color=TEXT, fontsize=14, fontweight="bold")
 
-    _prepare_axis(axes[0], result)
-    _plot_mujoco(axes[0], time_s, traces["fz_left_N"], "MuJoCo left plate", linestyle="--", alpha=0.72, color=MUJOCO)
-    _plot_mujoco(axes[0], time_s, traces["fz_right_N"], "MuJoCo right plate", linestyle=":", alpha=0.72, color=GRF_RIGHT_AMBER)
-    _plot_mujoco(axes[0], time_s, traces["fz_total_N"], "MuJoCo bilateral total", color=GRF_TOTAL_RED)
-    _plot_mujoco(axes[0], time_s, traces["total_fz_N"], "MuJoCo raw contact total", linestyle="-.", alpha=0.68, color=LPT_TETHER_PURPLE)
-    observed_time = [float(value) for value in observed["time_s"]]
-    _plot_observed(axes[0], observed_time, observed["fz_left_N"], "observed left plate", color="#b7efff", linewidth=1.0)
-    _plot_observed(axes[0], observed_time, observed["fz_right_N"], "observed right plate", color="#ffd39a", linewidth=1.0)
-    _plot_observed(axes[0], observed_time, observed["fz_total_N"], "observed bilateral total", color=OBSERVED, linewidth=1.3)
-    _style_axis(axes[0], "Bilateral vertical force plates", "force (N)")
-    _legend(axes[0], ncol=3)
+    _phase_context(axes[0], result)
+    for key, color, style in (("fz_left_N", COLORS["left"], "-"), ("fz_right_N", COLORS["right"], "--"), ("fz_total_N", COLORS["total"], "-")):
+        _plot_model(axes[0], time_s, traces[key], color=color, linestyle=style, linewidth=2.35 if key == "fz_total_N" else 1.8)
+        _plot_observed(axes[0], observed_time, observed[key], color=color)
+    _style_axis(axes[0], "Bilateral vertical force plates", "force (N)", limits=_limit(scales, "force_N", traces["fz_total_N"]))
+    _add_legend(axes[0], _side_handles(colors=True), "SIDE")
+    _add_legend(axes[0], _source_handles(), "SOURCE", loc="upper right")
 
-    _prepare_axis(axes[1], result)
-    regional_fz_colors = (
-        MUJOCO, GRF_RIGHT_AMBER, "#ff6b6b", "#4cc9f0", LPT_VELOCITY_GREEN, LPT_TETHER_PURPLE,
+    _phase_context(axes[1], result)
+    regional = (
+        ("left_heel_fz_N", COLORS["heel"], "-"), ("right_heel_fz_N", COLORS["heel"], "--"),
+        ("left_forefoot_fz_N", COLORS["forefoot"], "-"), ("right_forefoot_fz_N", COLORS["forefoot"], "--"),
+        ("left_toe_fz_N", COLORS["toe"], "-"), ("right_toe_fz_N", COLORS["toe"], "--"),
     )
-    for key, color in zip((
-        "left_heel_fz_N", "left_forefoot_fz_N", "left_toe_fz_N",
-        "right_heel_fz_N", "right_forefoot_fz_N", "right_toe_fz_N",
-    ), regional_fz_colors):
-        _plot_mujoco(axes[1], time_s, traces[key], f"MuJoCo {key.removesuffix('_fz_N')}", alpha=0.78, color=color)
-    _style_axis(axes[1], "Regional vertical contact forces", "force (N)")
-    _legend(axes[1], ncol=3)
+    for key, color, style in regional:
+        _plot_model(axes[1], time_s, traces[key], color=color, linestyle=style, linewidth=1.4, alpha=0.88)
+    _style_axis(axes[1], "Regional vertical contact force", "force (N)", limits=_limit(scales, "regional_fz_N", traces["left_heel_fz_N"]))
+    _add_legend(axes[1], _region_handles(), "REGION")
+    _add_legend(axes[1], _side_handles(), "SIDE", loc="upper right")
 
-    _prepare_axis(axes[2], result)
-    regional_fx_colors = (
-        COM_ORANGE, LPT_DISPLACEMENT_MAGENTA, "#00b4d8", "#90be6d", "#577590", "#f8961e",
+    _phase_context(axes[2], result)
+    regional_horizontal = (
+        ("left_heel_fx_N", COLORS["heel"], "-"), ("right_heel_fx_N", COLORS["heel"], "--"),
+        ("left_forefoot_fx_N", COLORS["forefoot"], "-"), ("right_forefoot_fx_N", COLORS["forefoot"], "--"),
+        ("left_toe_fx_N", COLORS["toe"], "-"), ("right_toe_fx_N", COLORS["toe"], "--"),
     )
-    for key, color in zip((
-        "left_heel_fx_N", "left_forefoot_fx_N", "left_toe_fx_N",
-        "right_heel_fx_N", "right_forefoot_fx_N", "right_toe_fx_N",
-    ), regional_fx_colors):
-        _plot_mujoco(axes[2], time_s, traces[key], f"MuJoCo {key.removesuffix('_fx_N')}", alpha=0.78, color=color)
-    _style_axis(axes[2], "Regional horizontal contact forces", "force (N)")
-    _legend(axes[2], ncol=3)
+    for key, color, style in regional_horizontal:
+        _plot_model(axes[2], time_s, traces[key], color=color, linestyle=style, linewidth=1.4, alpha=0.88)
+    _style_axis(axes[2], "Regional horizontal contact force", "force (N)", limits=_limit(scales, "regional_fx_N", traces["left_heel_fx_N"]))
+    _add_legend(axes[2], _region_handles(), "REGION")
+    _add_legend(axes[2], _side_handles(), "SIDE", loc="upper right")
 
-    _prepare_axis(axes[3], result, labels=True)
-    _plot_mujoco(axes[3], time_s, traces["total_fx_N"], "MuJoCo total Fx", color="#00b4d8")
-    _style_axis(axes[3], "Total horizontal force-plate signal", "force (N)")
+    _phase_context(axes[3], result, labels=True)
+    _plot_model(axes[3], time_s, traces["total_fx_N"], color=COLORS["net"], linewidth=2.2)
+    _style_axis(axes[3], "Total horizontal force-plate signal", "force (N)", limits=_limit(scales, "regional_fx_N", traces["total_fx_N"]))
+    _add_legend(axes[3], [Line2D([], [], color=COLORS["net"], linewidth=2, label="Total Fx")], "CHANNEL", loc="lower right")
     axes[3].set_xlabel("time (s)", color=TEXT)
-    _legend(axes[3], loc="lower right")
-    for ax in axes:
-        ax.set_xlim(time_s[0], time_s[-1])
+    _set_time_axis(axes, scales)
     _finish(fig, "force_plate_metrics.png")
 
 
-def _global_kinematics(result: dict[str, Any]) -> None:
+def _global_kinematics(result: dict[str, Any], scales: dict[str, tuple[float, float]]) -> None:
     time_s, traces = _time_values(result)
     fig, axes = plt.subplots(4, 1, figsize=(13, 11.5), sharex=True, constrained_layout=True)
     fig.suptitle("Loaded CMJ global kinematics", color=TEXT, fontsize=14, fontweight="bold")
-
-    _prepare_axis(axes[0], result)
-    _plot_mujoco(axes[0], time_s, traces["root_x_m"], "MuJoCo pelvis/root x", linestyle="--", color=MUJOCO)
-    _plot_mujoco(axes[0], time_s, traces["com_x_m"], "MuJoCo COM x", color=COM_ORANGE)
-    _style_axis(axes[0], "Horizontal position", "position (m)")
-    _legend(axes[0])
-
-    _prepare_axis(axes[1], result)
-    _plot_mujoco(axes[1], time_s, traces["root_z_m"], "MuJoCo pelvis/root z", linestyle="--", color=LPT_VELOCITY_GREEN)
-    _plot_mujoco(axes[1], time_s, traces["com_z_m"], "MuJoCo COM z", color=COM_ORANGE)
-    _style_axis(axes[1], "Vertical position", "position (m)")
-    _legend(axes[1])
-
-    _prepare_axis(axes[2], result)
-    _plot_mujoco(axes[2], time_s, traces["bar_z_m"], "MuJoCo bar z", linestyle="--", color=GRF_RIGHT_AMBER)
-    _plot_mujoco(axes[2], time_s, traces["bar_displacement_m"], "MuJoCo bar displacement", color=LPT_DISPLACEMENT_MAGENTA)
-    _style_axis(axes[2], "Loaded bar position channels", "position (m)")
-    _legend(axes[2])
-
-    _prepare_axis(axes[3], result, labels=True)
-    _plot_mujoco(axes[3], time_s, traces["root_x_velocity_m_s"], "MuJoCo root x velocity", linestyle="--", color=MUJOCO)
-    _plot_mujoco(axes[3], time_s, traces["root_z_velocity_m_s"], "MuJoCo root z velocity", linestyle=":", color=GRF_RIGHT_AMBER)
-    _plot_mujoco(axes[3], time_s, traces["bar_velocity_m_s"], "MuJoCo bar velocity", color=LPT_VELOCITY_GREEN)
-    _style_axis(axes[3], "Global velocities", "velocity (m/s)")
-    axes[3].set_xlabel("time (s)", color=TEXT)
-    _legend(axes[3], ncol=3, loc="lower right")
-    for ax in axes:
-        ax.set_xlim(time_s[0], time_s[-1])
+    panels = (
+        ((("root_x_m", COLORS["root"], "-"), ("com_x_m", COLORS["com"], "-")), "Horizontal position", "position (m)"),
+        ((("root_z_m", COLORS["root"], "-"), ("com_z_m", COLORS["com"], "-")), "Vertical position", "position (m)"),
+        ((("bar_z_m", COLORS["bar"], "-"), ("bar_displacement_m", COLORS["lpt_displacement"], "--")), "Loaded bar position channels", "position (m)"),
+        ((("root_x_velocity_m_s", COLORS["root"], "-"), ("root_z_velocity_m_s", COLORS["root"], "--"), ("bar_velocity_m_s", COLORS["lpt_velocity"], "-")), "Global velocities", "velocity (m/s)"),
+    )
+    for index, (series, title, ylabel) in enumerate(panels):
+        _phase_context(axes[index], result, labels=index == len(panels) - 1)
+        for key, color, style in series:
+            _plot_model(axes[index], time_s, traces[key], color=color, linestyle=style)
+        group = ("horizontal_position_m", "vertical_position_m", "bar_position_m", "velocity_m_s")[index]
+        _style_axis(axes[index], title, ylabel, limits=_limit(scales, group, traces[series[0][0]]))
+        labels = [
+            "Root x", "COM x", "Root z", "COM z", "Bar z", "Bar displacement",
+            "Root x velocity", "Root z velocity", "Bar velocity",
+        ]
+        offset = (0, 2, 4, 6)[index]
+        _add_legend(axes[index], [Line2D([], [], color=color, linestyle=style, linewidth=2, label=labels[offset + i])
+                                 for i, (_, color, style) in enumerate(series)], "CHANNEL")
+    axes[-1].set_xlabel("time (s)", color=TEXT)
+    _set_time_axis(axes, scales)
     _finish(fig, "global_kinematics.png")
 
 
-def _foot_kinematics(result: dict[str, Any]) -> None:
+def _foot_kinematics(result: dict[str, Any], scales: dict[str, tuple[float, float]]) -> None:
     time_s, traces = _time_values(result)
-    fig, axes = plt.subplots(2, 1, figsize=(13, 7.5), sharex=True, constrained_layout=True)
+    fig, axes = plt.subplots(3, 1, figsize=(13, 9), sharex=True, constrained_layout=True)
     fig.suptitle("Loaded CMJ foot kinematics", color=TEXT, fontsize=14, fontweight="bold")
-
-    _prepare_axis(axes[0], result)
-    foot_height_colors = (
-        MUJOCO, GRF_RIGHT_AMBER, COM_ORANGE,
-        LPT_VELOCITY_GREEN, "#4cc9f0", LPT_TETHER_PURPLE,
-    )
-    for key, color in zip((
-        "left_heel_z_m", "left_forefoot_z_m", "left_toe_z_m",
-        "right_heel_z_m", "right_forefoot_z_m", "right_toe_z_m",
-    ), foot_height_colors):
-        _plot_mujoco(axes[0], time_s, traces[key], f"MuJoCo {key.removesuffix('_z_m')}", alpha=0.78, color=color)
-    _style_axis(axes[0], "Foot landmark heights", "height (m)")
-    _legend(axes[0], ncol=3)
-
-    _prepare_axis(axes[1], result, labels=True)
-    _plot_mujoco(axes[1], time_s, traces["foot_clearance_m"], "MuJoCo minimum foot clearance", color="#00b4d8")
-    _style_axis(axes[1], "Minimum bilateral foot clearance", "clearance (m)")
-    axes[1].set_xlabel("time (s)", color=TEXT)
-    _legend(axes[1])
-    for ax in axes:
-        ax.set_xlim(time_s[0], time_s[-1])
+    regions = (("heel", "left_heel_z_m"), ("forefoot", "left_forefoot_z_m"), ("toe", "left_toe_z_m"))
+    for index, (side, keys) in enumerate((
+        ("Left", tuple(f"left_{region}_z_m" for region in ("heel", "forefoot", "toe"))),
+        ("Right", tuple(f"right_{region}_z_m" for region in ("heel", "forefoot", "toe"))),
+    )):
+        _phase_context(axes[index], result)
+        for key, region in zip(keys, ("heel", "forefoot", "toe")):
+            _plot_model(axes[index], time_s, traces[key], color=COLORS[region], linestyle="-" if side == "Left" else "--")
+        _style_axis(axes[index], f"{side} foot landmark heights", "height (m)", limits=_limit(scales, "foot_height_m", traces[keys[0]]))
+        _add_legend(axes[index], _region_handles(), "REGION")
+    _phase_context(axes[2], result, labels=True)
+    _plot_model(axes[2], time_s, traces["foot_clearance_m"], color=COLORS["total"], linewidth=2.25)
+    _style_axis(axes[2], "Minimum bilateral foot clearance", "clearance (m)", limits=_limit(scales, "foot_clearance_m", traces["foot_clearance_m"]))
+    _add_legend(axes[2], [Line2D([], [], color=OFF_WHITE, linewidth=2, label="Minimum bilateral clearance")], "CHANNEL", loc="lower right")
+    axes[2].set_xlabel("time (s)", color=TEXT)
+    _set_time_axis(axes, scales)
     _finish(fig, "foot_kinematics.png")
 
 
-def _joint_kinematics(result: dict[str, Any]) -> None:
+def _joint_kinematics(result: dict[str, Any], scales: dict[str, tuple[float, float]]) -> None:
     time_s, traces = _time_values(result)
-    position_groups = (
-        (
-            "Anatomical joint positions",
-            (
-                ("left_hip_rad", "hip L"), ("right_hip_rad", "hip R"),
-                ("left_knee_rad", "knee L"), ("right_knee_rad", "knee R"),
-                ("left_ankle_rad", "ankle L"), ("right_ankle_rad", "ankle R"),
-                ("lumbar_pitch_rad", "lumbar"),
-                ("left_shoulder_rad", "shoulder L"), ("right_shoulder_rad", "shoulder R"),
-                ("left_elbow_rad", "elbow L"), ("right_elbow_rad", "elbow R"),
-            ),
-        ),
-        (
-            "Foot and bar-rack joint positions",
-            (
-                ("left_forefoot_rocker_rad", "rocker L"), ("right_forefoot_rocker_rad", "rocker R"),
-                ("left_mtp_rad", "MTP L"), ("right_mtp_rad", "MTP R"),
-                ("bar_rack_x_m", "bar rack x"), ("bar_rack_z_m", "bar rack z"),
-                ("bar_rack_pitch_rad", "bar rack pitch"),
-            ),
-        ),
+    rows = (
+        ("Hip", "hip", "left_hip_rad", "right_hip_rad", "left_hip_velocity_rad_s", "right_hip_velocity_rad_s", COLORS["hip"]),
+        ("Knee", "knee", "left_knee_rad", "right_knee_rad", "left_knee_velocity_rad_s", "right_knee_velocity_rad_s", COLORS["knee"]),
+        ("Ankle", "ankle", "left_ankle_rad", "right_ankle_rad", "left_ankle_velocity_rad_s", "right_ankle_velocity_rad_s", COLORS["ankle"]),
+        ("Forefoot rocker", "rocker", "left_forefoot_rocker_rad", "right_forefoot_rocker_rad", "left_forefoot_rocker_velocity_rad_s", "right_forefoot_rocker_velocity_rad_s", COLORS["rocker"]),
+        ("MTP / toe", "mtp", "left_mtp_rad", "right_mtp_rad", "left_mtp_velocity_rad_s", "right_mtp_velocity_rad_s", COLORS["mtp"]),
     )
-    velocity_groups = (
-        (
-            "Anatomical joint velocities",
-            (
-                ("left_hip_velocity_rad_s", "hip L"), ("right_hip_velocity_rad_s", "hip R"),
-                ("left_knee_velocity_rad_s", "knee L"), ("right_knee_velocity_rad_s", "knee R"),
-                ("left_ankle_velocity_rad_s", "ankle L"), ("right_ankle_velocity_rad_s", "ankle R"),
-                ("lumbar_pitch_rate_rad_s", "lumbar"),
-                ("left_shoulder_velocity_rad_s", "shoulder L"), ("right_shoulder_velocity_rad_s", "shoulder R"),
-                ("left_elbow_velocity_rad_s", "elbow L"), ("right_elbow_velocity_rad_s", "elbow R"),
-            ),
-        ),
-        (
-            "Foot and bar-rack joint velocities",
-            (
-                ("left_forefoot_rocker_velocity_rad_s", "rocker L"),
-                ("right_forefoot_rocker_velocity_rad_s", "rocker R"),
-                ("left_mtp_velocity_rad_s", "MTP L"), ("right_mtp_velocity_rad_s", "MTP R"),
-                ("bar_rack_x_velocity_m_s", "bar rack x"),
-                ("bar_rack_z_velocity_m_s", "bar rack z"),
-                ("bar_rack_pitch_velocity_rad_s", "bar rack pitch"),
-            ),
-        ),
-    )
-
-    fig, axes = plt.subplots(4, 1, figsize=(14, 14.5), sharex=True, constrained_layout=True)
-    fig.suptitle("Loaded CMJ joint kinematics — q and qdot", color=TEXT, fontsize=14, fontweight="bold")
-    groups = position_groups + velocity_groups
-    anatomical_colors = (
-        MUJOCO, GRF_RIGHT_AMBER, COM_ORANGE, LPT_DISPLACEMENT_MAGENTA,
-        LPT_VELOCITY_GREEN, "#4cc9f0", LPT_TETHER_PURPLE, "#f72585",
-        "#90be6d", "#577590", "#f9844a",
-    )
-    articulation_colors = (
-        MUJOCO, GRF_RIGHT_AMBER, COM_ORANGE, LPT_DISPLACEMENT_MAGENTA,
-        LPT_VELOCITY_GREEN, "#4cc9f0", LPT_TETHER_PURPLE,
-    )
-    for index, (title, channels) in enumerate(groups):
-        _prepare_axis(axes[index], result, labels=index == len(groups) - 1)
-        colors = anatomical_colors if index in (0, 2) else articulation_colors
-        for (channel, label), color in zip(channels, colors):
-            _plot_mujoco(axes[index], time_s, traces[channel], f"MuJoCo {label}", alpha=0.78, color=color)
-        ylabel = "q (rad; bar translations m)" if index < 2 else "qdot (rad/s; bar translations m/s)"
-        _style_axis(axes[index], title, ylabel)
-        _legend(
-            axes[index],
-            ncol=4,
-            loc="lower right" if index == len(groups) - 1 else "upper left",
-        )
-    axes[-1].set_xlabel("time (s)", color=TEXT)
-    for ax in axes:
-        ax.set_xlim(time_s[0], time_s[-1])
+    fig, axes = plt.subplots(5, 2, figsize=(13, 15), sharex=True, constrained_layout=True)
+    fig.suptitle("Loaded CMJ lower-limb joint kinematics", color=TEXT, fontsize=14, fontweight="bold")
+    for row, (label, group, left_q, right_q, left_qd, right_qd, color) in enumerate(rows):
+        for column, (left_key, right_key, unit, scale_group, title_suffix) in enumerate((
+            (left_q, right_q, "rad", f"{group}_position_rad", "position"),
+            (left_qd, right_qd, "rad/s", f"{group}_velocity_rad_s", "velocity"),
+        )):
+            ax = axes[row, column]
+            _phase_context(ax, result, labels=row == len(rows) - 1 and column == 1)
+            _plot_model(ax, time_s, traces[left_key], color=color, linestyle="-")
+            _plot_model(ax, time_s, traces[right_key], color=color, linestyle="--")
+            _style_axis(ax, f"{label} · {title_suffix}", unit, limits=_limit(scales, scale_group, traces[left_key]))
+            if row == 0 and column == 0:
+                _add_legend(ax, _joint_handles(), "JOINT")
+                _add_legend(ax, _side_handles(), "SIDE", loc="upper right")
+    axes[-1, 0].set_xlabel("time (s)", color=TEXT)
+    axes[-1, 1].set_xlabel("time (s)", color=TEXT)
+    _set_time_axis(axes.flat, scales)
     _finish(fig, "joint_kinematics.png")
 
 
-def _contact_mechanics(result: dict[str, Any]) -> None:
+def _auxiliary_kinematics(result: dict[str, Any], scales: dict[str, tuple[float, float]]) -> None:
+    time_s, traces = _time_values(result)
+    fig, axes = plt.subplots(4, 2, figsize=(13, 13), sharex=True, constrained_layout=True)
+    fig.suptitle("Loaded CMJ auxiliary kinematics", color=TEXT, fontsize=14, fontweight="bold")
+    panels = (
+        (0, 0, (("lumbar_pitch_rad", COLORS["lumbar"], "-"),), "Trunk pitch", "rad", "pitch_rad", "pitch"),
+        (0, 1, (("left_shoulder_rad", COLORS["shoulder"], "-"), ("right_shoulder_rad", COLORS["shoulder"], "--"),
+                 ("left_elbow_rad", COLORS["elbow"], "-"), ("right_elbow_rad", COLORS["elbow"], "--")),
+         "Shoulder and elbow angles", "rad", "upper_angles_rad", "upper angles"),
+        (1, 0, (("lumbar_pitch_rate_rad_s", COLORS["lumbar"], "-"),), "Trunk pitch rate", "rad/s", "pitch_rate_rad_s", "pitch rate"),
+        (1, 1, (("left_shoulder_velocity_rad_s", COLORS["shoulder"], "-"), ("right_shoulder_velocity_rad_s", COLORS["shoulder"], "--"),
+                 ("left_elbow_velocity_rad_s", COLORS["elbow"], "-"), ("right_elbow_velocity_rad_s", COLORS["elbow"], "--")),
+         "Shoulder and elbow angular velocities", "rad/s", "upper_rates_rad_s", "upper rates"),
+        (2, 0, (("bar_rack_x_m", COLORS["root"], "-"), ("bar_rack_z_m", COLORS["bar"], "--")),
+         "Bar/rack translations", "m", "bar_rack_translation_m", "translation"),
+        (2, 1, (("bar_rack_x_velocity_m_s", COLORS["root"], "-"), ("bar_rack_z_velocity_m_s", COLORS["bar"], "--")),
+         "Bar/rack translation velocities", "m/s", "bar_rack_translation_velocity_m_s", "translation velocity"),
+        (3, 0, (("bar_rack_pitch_rad", COLORS["rocker"], "-"),), "Bar/rack pitch", "rad", "pitch_rad", "pitch"),
+        (3, 1, (("bar_rack_pitch_velocity_rad_s", COLORS["rocker"], "-"),), "Bar/rack pitch rate", "rad/s", "pitch_rate_rad_s", "pitch rate"),
+    )
+    labels = {
+        "lumbar_pitch_rad": "Trunk pitch", "lumbar_pitch_rate_rad_s": "Trunk pitch rate",
+        "left_shoulder_rad": "Left shoulder", "right_shoulder_rad": "Right shoulder",
+        "left_elbow_rad": "Left elbow", "right_elbow_rad": "Right elbow",
+        "left_shoulder_velocity_rad_s": "Left shoulder", "right_shoulder_velocity_rad_s": "Right shoulder",
+        "left_elbow_velocity_rad_s": "Left elbow", "right_elbow_velocity_rad_s": "Right elbow",
+        "bar_rack_x_m": "Rack x", "bar_rack_z_m": "Rack z",
+        "bar_rack_x_velocity_m_s": "Rack x velocity", "bar_rack_z_velocity_m_s": "Rack z velocity",
+        "bar_rack_pitch_rad": "Rack pitch", "bar_rack_pitch_velocity_rad_s": "Rack pitch rate",
+    }
+    for row, column, series, title, unit, group, _ in panels:
+        ax = axes[row, column]
+        _phase_context(ax, result, labels=row == 3 and column == 1)
+        for key, color, style in series:
+            _plot_model(ax, time_s, traces[key], color=color, linestyle=style)
+        _style_axis(ax, title, unit, limits=_limit(scales, group, traces[series[0][0]]))
+        _add_legend(ax, [Line2D([], [], color=color, linestyle=style, linewidth=2, label=labels[key])
+                         for key, color, style in series], "CHANNEL", ncol=2 if len(series) > 2 else 1)
+    _add_legend(axes[0, 0], _side_handles(), "SIDE", loc="upper right")
+    axes[-1, 0].set_xlabel("time (s)", color=TEXT)
+    axes[-1, 1].set_xlabel("time (s)", color=TEXT)
+    _set_time_axis(axes.flat, scales)
+    _finish(fig, "auxiliary_kinematics.png")
+
+
+def _contact_raster(ax: Any, time_s: np.ndarray, traces: dict[str, Any]) -> None:
+    rows = (
+        ("Left heel", "left_heel_contact", COLORS["heel"]),
+        ("Left forefoot", "left_forefoot_contact", COLORS["forefoot"]),
+        ("Left toe", "left_toe_contact", COLORS["toe"]),
+        ("Right heel", "right_heel_contact", COLORS["heel"]),
+        ("Right forefoot", "right_forefoot_contact", COLORS["forefoot"]),
+        ("Right toe", "right_toe_contact", COLORS["toe"]),
+    )
+    dt = float(np.median(np.diff(time_s))) if len(time_s) > 1 else 0.0
+    for row, (label, key, color) in enumerate(rows):
+        state = np.asarray(traces[key], dtype=bool)
+        start = None
+        for index, active in enumerate(np.r_[state, False]):
+            if active and start is None:
+                start = index
+            elif not active and start is not None:
+                end = index
+                x0 = float(time_s[start])
+                width = float(time_s[min(end - 1, len(time_s) - 1)] - x0 + dt)
+                ax.broken_barh([(x0, max(width, dt))], (row - 0.34, 0.68), facecolors=color, alpha=0.92)
+                start = None
+    ax.set_yticks(range(len(rows)), [label for label, _, _ in rows])
+    ax.set_ylim(-0.7, len(rows) - 0.3)
+    ax.invert_yaxis()
+    ax.set_ylabel("contact lane")
+    for row in range(len(rows)):
+        ax.axhline(row, color=GRID, linewidth=0.45, alpha=0.7, zorder=0)
+
+
+def _contact_mechanics(result: dict[str, Any], scales: dict[str, tuple[float, float]]) -> None:
     time_s, traces = _time_values(result)
     fig, axes = plt.subplots(3, 1, figsize=(13, 9), sharex=True, constrained_layout=True)
     fig.suptitle("Loaded CMJ contact and force-platform mechanics", color=TEXT, fontsize=14, fontweight="bold")
 
-    _prepare_axis(axes[0], result)
-    contact_colors = (
-        MUJOCO, GRF_RIGHT_AMBER, COM_ORANGE,
-        LPT_VELOCITY_GREEN, "#4cc9f0", LPT_TETHER_PURPLE,
-    )
-    for key, color in zip((
-        "left_heel_contact", "left_forefoot_contact", "left_toe_contact",
-        "right_heel_contact", "right_forefoot_contact", "right_toe_contact",
-    ), contact_colors):
-        _plot_mujoco(axes[0], time_s, [int(value) for value in traces[key]], f"MuJoCo {key.removesuffix('_contact')}", alpha=0.78, color=color)
-    axes[0].set_ylim(-0.08, 1.08)
-    axes[0].set_yticks((0, 1), labels=("off", "on"))
-    _style_axis(axes[0], "Per-region contact state", "contact")
-    _legend(axes[0], ncol=3)
+    _phase_context(axes[0], result)
+    _contact_raster(axes[0], time_s, traces)
+    _style_axis(axes[0], "Contact raster — active intervals", None)
+    _add_legend(axes[0], [Patch(facecolor=COLORS["heel"], label="Heel"), Patch(facecolor=COLORS["forefoot"], label="Forefoot"), Patch(facecolor=COLORS["toe"], label="Toe")], "REGION", loc="upper right", ncol=3)
 
-    _prepare_axis(axes[1], result)
-    _plot_mujoco(axes[1], time_s, traces["cop_x_m"], "MuJoCo center of pressure x", color="#00b4d8")
-    _style_axis(axes[1], "Force-platform center of pressure", "CoP x (m)")
-    _legend(axes[1])
+    _phase_context(axes[1], result)
+    cop = np.asarray([np.nan if value is None else float(value) for value in traces["cop_x_m"]], dtype=float)
+    axes[1].plot(time_s, cop, color=COLORS["net"], linewidth=1.85, zorder=3)
+    _style_axis(axes[1], "Force-platform centre of pressure", "CoP x (m)", limits=_limit(scales, "cop_x_m", cop))
+    _add_legend(axes[1], [Line2D([], [], color=COLORS["net"], linewidth=2, label="Centre of pressure x")], "CHANNEL")
 
-    _prepare_axis(axes[2], result, labels=True)
-    _plot_mujoco(axes[2], time_s, traces["left_slip_vx_m_s"], "MuJoCo left slip speed", linestyle="--", color=COM_ORANGE)
-    _plot_mujoco(axes[2], time_s, traces["right_slip_vx_m_s"], "MuJoCo right slip speed", color=LPT_TETHER_PURPLE)
-    _style_axis(axes[2], "Contact slip diagnostics", "speed (m/s)")
+    _phase_context(axes[2], result, labels=True)
+    _plot_model(axes[2], time_s, traces["left_slip_vx_m_s"], color=COLORS["left"], linestyle="-")
+    _plot_model(axes[2], time_s, traces["right_slip_vx_m_s"], color=COLORS["right"], linestyle="--")
+    _style_axis(axes[2], "Contact slip diagnostics", "speed (m/s)", limits=_limit(scales, "slip_m_s", traces["left_slip_vx_m_s"]))
+    _add_legend(axes[2], _side_handles(colors=True), "SIDE", loc="lower right")
     axes[2].set_xlabel("time (s)", color=TEXT)
-    _legend(axes[2], loc="lower right")
-    for ax in axes:
-        ax.set_xlim(time_s[0], time_s[-1])
+    _set_time_axis(axes, scales)
     _finish(fig, "contact_mechanics.png")
 
 
-def _phase_events(result: dict[str, Any]) -> None:
+def _phase_events(result: dict[str, Any], scales: dict[str, tuple[float, float]]) -> None:
     time_s, traces = _time_values(result)
-    fig, ax = plt.subplots(1, 1, figsize=(13, 3.5), constrained_layout=True)
-    _style_axis(ax, "Source CMJ phase dissection and event timing", "phase index")
-    _shade_phases(ax, result, labels=True)
-    _event_lines(ax, result, labels=True)
-    _plot_mujoco(ax, time_s, traces["phase_index"], "MuJoCo phase index")
-    ax.set_yticks(range(len(PHASE_NAMES)), labels=[name.replace("_", " ") for name in PHASE_NAMES])
+    fig, ax = plt.subplots(1, 1, figsize=(13, 4), constrained_layout=True)
+    _phase_context(ax, result, labels=True, strong=True)
+    ax.step(time_s, traces["phase_index"], where="post", color=OFF_WHITE, linewidth=2.0, zorder=3)
+    _style_axis(ax, "Source CMJ phase dissection and event timing", "phase", limits=(-0.5, len(PHASE_NAMES) - 0.5))
+    ax.set_yticks(range(len(PHASE_NAMES)), [name.replace("_", " ") for name in PHASE_NAMES])
+    _add_legend(ax, [Line2D([], [], color=EVENT_COLORS["movement_onset_time_s"], linestyle=(0, (3, 2)), label="Movement onset"),
+                     Line2D([], [], color=EVENT_COLORS["takeoff_time_s"], linestyle=(0, (3, 2)), label="Takeoff"),
+                     Line2D([], [], color=EVENT_COLORS["landing_time_s"], linestyle=(0, (3, 2)), label="Landing")],
+                "EVENT", loc="lower right", ncol=3)
     ax.set_xlabel("time (s)", color=TEXT)
-    ax.set_xlim(time_s[0], time_s[-1])
-    _legend(ax, loc="lower right")
+    _set_time_axis((ax,), scales)
     _finish(fig, "phase_events.png")
 
 
-def _summary_metrics(result: dict[str, Any], trial: dict[str, Any]) -> None:
-    """Render existing scalar summaries/diagnostics without recomputing them."""
+def _format_value(value: Any, *, unit: str = "") -> str:
+    if isinstance(value, str):
+        return value
+    if value is None:
+        return "not available"
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return str(value)
+    return f"{number:.5g}{(' ' + unit) if unit else ''}"
 
-    fig, ax = plt.subplots(1, 1, figsize=(12, 8), constrained_layout=True)
+
+def _metric_block(ax: Any, title: str, rows: list[tuple[str, Any]]) -> None:
     ax.set_facecolor(PANEL)
     ax.axis("off")
-    ax.set_title("Loaded CMJ scalar metrics and event diagnostics", loc="left", color=TEXT, pad=12)
+    ax.text(0.03, 0.97, title, transform=ax.transAxes, color=SKY_BLUE, fontsize=10.5, fontweight="bold", va="top")
+    y = 0.90
+    step = 0.073 if len(rows) <= 11 else 0.066
+    for label, value in rows:
+        ax.text(0.03, y, label, transform=ax.transAxes, color=MUTED, fontsize=8.2, va="top")
+        ax.text(0.97, y, value, transform=ax.transAxes, color=WARM_GOLD, fontsize=8.4, va="top", ha="right")
+        y -= step
+
+
+def _summary_metrics(result: dict[str, Any], trial: dict[str, Any]) -> None:
+    """Render human-readable scalar summaries without recomputing metrics."""
 
     summary = result["summary"]
     diagnostics = result.get("diagnostics", {})
     events = result.get("events", {})
-    lines = [
-        ("TRIAL", ""),
-        ("trial_id", str(trial.get("trial_id", SCENARIO_ID))),
-        ("external_load_kg", f"{float(trial.get('external_load_kg', 20.0)):.6g}"),
-        ("", ""),
-        ("SUMMARY", ""),
-        *[(key, f"{float(value):.6g}") for key, value in summary.items()],
-        ("", ""),
-        ("EVENTS", ""),
-        *[(key, "None" if value is None else f"{float(value):.6g}") for key, value in events.items()
-          if key.endswith("_time_s") or key in {"takeoff_velocity_m_s", "jump_height_im_m", "airborne_duration_s"}],
-        ("", ""),
-        ("DIAGNOSTICS", ""),
-        *[(key, f"{float(value):.6g}") for key, value in diagnostics.items()
-          if isinstance(value, (int, float)) and key not in {"used_mujoco"}],
+    traces = result["traces"]
+    performance = [
+        ("Movement onset", _format_value(events.get("movement_onset_time_s"), unit="s")),
+        ("Takeoff time", _format_value(events.get("takeoff_time_s"), unit="s")),
+        ("Takeoff velocity", _format_value(summary.get("takeoff_velocity_m_s"), unit="m/s")),
+        ("Impulse jump height", _format_value(summary.get("jump_height_im_m"), unit="m")),
+        ("Airborne duration", _format_value(summary.get("airborne_duration_s"), unit="s")),
+        ("Propulsive impulse", _format_value(summary.get("propulsive_impulse_Ns"), unit="N·s")),
+        ("Total net impulse", _format_value(summary.get("total_net_impulse_Ns"), unit="N·s")),
+        ("Peak concentric force", _format_value(summary.get("peak_concentric_force_N"), unit="N")),
+        ("Mean concentric force", _format_value(summary.get("mean_concentric_force_N"), unit="N")),
+        ("Bar peak velocity", _format_value(summary.get("bar_peak_velocity_m_s"), unit="m/s")),
+        ("Bar displacement range", _format_value(summary.get("bar_displacement_range_m"), unit="m")),
     ]
-    bilateral = trial.get("bilateral_measurements")
+    auxiliary_force = max(float(diagnostics.get("qfrc_applied_norm_max", 0.0)), float(diagnostics.get("xfrc_applied_norm_max", 0.0)))
+    mechanical = [
+        ("Peak total GRF", _format_value(np.max(np.asarray(traces["fz_total_N"], dtype=float)), unit="N")),
+        ("Maximum trunk pitch", _format_value(diagnostics.get("root_pitch_abs_max_rad"), unit="rad")),
+        ("Maximum trunk pitch rate", _format_value(diagnostics.get("root_pitch_rate_abs_max_rad_s"), unit="rad/s")),
+        ("Maximum horizontal/root drift", _format_value(diagnostics.get("root_x_abs_max_m"), unit="m")),
+        ("Final joint-velocity norm", _format_value(diagnostics.get("final_joint_velocity_norm"), unit="rad/s")),
+        ("Applied auxiliary force", _format_value(auxiliary_force, unit="N")),
+        ("Actuator clipping", _format_value(diagnostics.get("drive_asymmetry_clip_count"), unit="count")),
+        ("Maximum LPT tether force", _format_value(summary.get("max_lpt_tether_force_N"), unit="N")),
+        ("Landing rebound", _format_value(diagnostics.get("landing_rebound_m"), unit="m")),
+        ("Heel-off time", _format_value(diagnostics.get("heel_off_time_s"), unit="s")),
+    ]
+    alpha = float(trial.get("drive_asymmetry_alpha", 0.0))
+    bilateral = trial.get("bilateral_measurements") if alpha else None
     if bilateral:
-        lines.extend([
-            ("", ""),
-            ("BILATERAL MEASUREMENTS", ""),
-            ("units", str(bilateral.get("units", "N*s"))),
-            ("left_braking_impulse_Ns", f"{float(bilateral['left_braking_impulse_Ns']):.6g}"),
-            ("right_braking_impulse_Ns", f"{float(bilateral['right_braking_impulse_Ns']):.6g}"),
-            ("left_propulsive_impulse_Ns", f"{float(bilateral['left_propulsive_impulse_Ns']):.6g}"),
-            ("right_propulsive_impulse_Ns", f"{float(bilateral['right_propulsive_impulse_Ns']):.6g}"),
-        ])
-    split = max(1, len(lines) // 2)
-    columns = (lines[:split], lines[split:])
-    for col, rows in enumerate(columns):
-        x = 0.02 + col * 0.49
-        y = 0.96
-        for key, value in rows:
-            if not key:
-                y -= 0.018
-                continue
-            if value == "":
-                ax.text(x, y, key, transform=ax.transAxes, color=OBSERVED, fontsize=10, fontweight="bold", va="top")
-                y -= 0.038
-                continue
-            ax.text(x, y, key, transform=ax.transAxes, color=MUTED, fontsize=8.5, va="top")
-            ax.text(x + 0.31, y, value, transform=ax.transAxes, color=MUJOCO, fontsize=8.5, va="top")
-            y -= 0.028
-    # Small source legend, kept as a visual key for the rest of the plot set.
-    ax.add_patch(Rectangle((0.02, 0.015), 0.018, 0.012, transform=ax.transAxes, color=OBSERVED, clip_on=False))
-    ax.text(0.045, 0.021, "observed = light blue", transform=ax.transAxes, color=OBSERVED, fontsize=8.5, va="center")
-    ax.add_patch(Rectangle((0.22, 0.015), 0.018, 0.012, transform=ax.transAxes, color=MUJOCO, clip_on=False))
-    ax.text(0.245, 0.021, "MuJoCo = yellow dotted", transform=ax.transAxes, color=MUJOCO, fontsize=8.5, va="center")
-    _finish(fig, "summary_metrics.png")
+        bilateral_rows = [
+            ("Drive asymmetry α", _format_value(alpha)),
+            ("Left drive scale", _format_value(diagnostics.get("drive_asymmetry_left_scale"))),
+            ("Right drive scale", _format_value(diagnostics.get("drive_asymmetry_right_scale"))),
+            ("Left braking impulse", _format_value(bilateral.get("left_braking_impulse_Ns"), unit="N·s")),
+            ("Right braking impulse", _format_value(bilateral.get("right_braking_impulse_Ns"), unit="N·s")),
+            ("Left propulsive impulse", _format_value(bilateral.get("left_propulsive_impulse_Ns"), unit="N·s")),
+            ("Right propulsive impulse", _format_value(bilateral.get("right_propulsive_impulse_Ns"), unit="N·s")),
+        ]
+    else:
+        bilateral_rows = [(label, "not applied") for label in (
+            "Drive asymmetry α", "Left drive scale", "Right drive scale",
+            "Left braking impulse", "Right braking impulse",
+            "Left propulsive impulse", "Right propulsive impulse",
+        )]
+
+    fig = plt.figure(figsize=(13, 8.5), facecolor=BACKGROUND)
+    grid = fig.add_gridspec(1, 3, left=0.025, right=0.975, bottom=0.07, top=0.88, wspace=0.12)
+    _metric_block(fig.add_subplot(grid[0, 0]), "PERFORMANCE & EVENTS", performance)
+    _metric_block(fig.add_subplot(grid[0, 1]), "MECHANICAL / NUMERICAL INTEGRITY", mechanical)
+    _metric_block(fig.add_subplot(grid[0, 2]), "BILATERAL CONDITION", bilateral_rows)
+    fig.suptitle("Loaded CMJ summary metrics", color=TEXT, fontsize=14, fontweight="bold", x=0.025, ha="left")
+    fig.text(0.995, 0.018, f"{SCENARIO_ID} | fixed 20 kg | native SI units", ha="right", va="bottom", color=MUTED, fontsize=7)
+    fig.savefig(OUTPUT_DIR / "summary_metrics.png", dpi=170, facecolor=BACKGROUND, edgecolor=BACKGROUND)
+    plt.close(fig)
 
 
 def render_scenario(
     trial: dict[str, Any],
     result: dict[str, Any],
     output_dir: str | Path,
+    *,
+    scale_context: dict[str, tuple[float, float]] | None = None,
 ) -> tuple[str, ...]:
     """Write the canonical plot family for one already-produced rollout."""
 
@@ -740,26 +874,18 @@ def render_scenario(
     SCENARIO_ID = str(trial.get("trial_id", "scenario"))
     _configure_style()
     observed = trial["observations"]
-    _combined_measurements(result, observed)
-    _combined_grf_com_lpt(result, observed)
-    _force_plate_metrics(result, observed)
-    _global_kinematics(result)
-    _foot_kinematics(result)
-    _joint_kinematics(result)
-    _contact_mechanics(result)
-    _phase_events(result)
+    scales = scale_context or build_scale_context([{"trial": trial, "result": result}])
+    _observable_fit(result, observed, scales)
+    _combined_grf_com_lpt(result, observed, scales)
+    _force_plate_metrics(result, observed, scales)
+    _global_kinematics(result, scales)
+    _foot_kinematics(result, scales)
+    _joint_kinematics(result, scales)
+    _auxiliary_kinematics(result, scales)
+    _contact_mechanics(result, scales)
+    _phase_events(result, scales)
     _summary_metrics(result, trial)
-    return (
-        "observable_fit.png",
-        "combined_grf_com_lpt.png",
-        "force_plate_metrics.png",
-        "global_kinematics.png",
-        "foot_kinematics.png",
-        "joint_kinematics.png",
-        "contact_mechanics.png",
-        "phase_events.png",
-        "summary_metrics.png",
-    )
+    return COMMON_PLOT_FAMILY
 
 
 def main(argv: list[str] | None = None) -> None:

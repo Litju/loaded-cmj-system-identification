@@ -6,6 +6,7 @@
     "global_kinematics.png",
     "foot_kinematics.png",
     "joint_kinematics.png",
+    "auxiliary_kinematics.png",
     "contact_mechanics.png",
     "phase_events.png",
     "summary_metrics.png"
@@ -15,7 +16,14 @@
     "event_timing_comparison": "comparison/event_timing_comparison.png",
     "grf_comparison": "comparison/grf_comparison.png",
     "lpt_comparison": "comparison/lpt_comparison.png",
-    "scenario_overview": "comparison/scenario_overview.png"
+    "scenario_overview": "comparison/scenario_overview.png",
+    "sha256": {
+      "comparison/bilateral_comparison.png": "f2c2410c62796812c53c0617c47b85ef1299b366376c0a3e8d3f311512df0fba",
+      "comparison/event_timing_comparison.png": "39811e7884dcee5322f1cc344a911d7c93939038d68ce7389ebc5b9535778bc6",
+      "comparison/grf_comparison.png": "fc983061f2f2b3c1f5e247ef741c02fbb732c399bb1804b5b3247e3ffe285edc",
+      "comparison/lpt_comparison.png": "e53df79a61b8a2fb5ff4607013676aa7f726b216f9eaca48f6e936e5967b13d7",
+      "comparison/scenario_overview.png": "577780e2631934eaba6bf0187f20b2c39bb60c99b9d6d87e8d418f36af8a4778"
+    }
   },
   "external_load_kg": 20.0,
   "generated_from": {
@@ -49,6 +57,18 @@
       "parameter_config_sha256": "8b8eb825ad8c1960dcac1eca18c0f9a1116dc46fcbadfaf2fb88928064d7d5a6",
       "plant_model": "assets/loaded_cmj_model.xml",
       "plant_model_sha256": "54e092b2aefd664af64d1848a7cca0e82d1205156b0c79c00f9dbc70600f87e5",
+      "plot_sha256": {
+        "20kg_nominal_a/auxiliary_kinematics.png": "b0f76fe8f9451b9c7eed447fe02898263677ef34cf534b693c75aae4956bd979",
+        "20kg_nominal_a/combined_grf_com_lpt.png": "c1569e82f0bf1dad8a9aa337e85eb473cc7240ade13fb58eb8a77203f90a3729",
+        "20kg_nominal_a/contact_mechanics.png": "4b053988388402cbf02caa8c27abbc948ccdac3a8571601f0b6def345329e3d8",
+        "20kg_nominal_a/foot_kinematics.png": "67b55db62cfe9dd15c57b731c939df92ccf0fc0bc10f0df2b87ecb5f4599d599",
+        "20kg_nominal_a/force_plate_metrics.png": "71b5315fb02c4388dab0296ecf5fb37989f20bae4592461b6740f21bd36ee548",
+        "20kg_nominal_a/global_kinematics.png": "bdf6fc20e28499e9486475f3a52cfd915d532de4239cea61d04655c342e58174",
+        "20kg_nominal_a/joint_kinematics.png": "365150904facf78004e19ce095d2f8ed0cd6ea81870143bba6f46044eb7efc2a",
+        "20kg_nominal_a/observable_fit.png": "bdb4a4ed0bb2f844d7e701a9ad133a35f8ae8d905cc93e05d65494d5465d1e35",
+        "20kg_nominal_a/phase_events.png": "8ffe106107415fd4aa7189db0a86700598c7499802b3c5850e7a6ff4ac020516",
+        "20kg_nominal_a/summary_metrics.png": "497f71120593a173362c76bb8d0e754872d9fc9ad50992ccb4fd3cb8fc9058bd"
+      },
       "plots": [
         "20kg_nominal_a/observable_fit.png",
         "20kg_nominal_a/combined_grf_com_lpt.png",
@@ -56,6 +76,7 @@
         "20kg_nominal_a/global_kinematics.png",
         "20kg_nominal_a/foot_kinematics.png",
         "20kg_nominal_a/joint_kinematics.png",
+        "20kg_nominal_a/auxiliary_kinematics.png",
         "20kg_nominal_a/contact_mechanics.png",
         "20kg_nominal_a/phase_events.png",
         "20kg_nominal_a/summary_metrics.png"
@@ -111,6 +132,18 @@
       "parameter_config_sha256": "8b8eb825ad8c1960dcac1eca18c0f9a1116dc46fcbadfaf2fb88928064d7d5a6",
       "plant_model": "assets/loaded_cmj_model.xml",
       "plant_model_sha256": "54e092b2aefd664af64d1848a7cca0e82d1205156b0c79c00f9dbc70600f87e5",
+      "plot_sha256": {
+        "20kg_nominal_b/auxiliary_kinematics.png": "c808832ffbda7cb7db544ab937da1cac0381ec5da4eefafa796c061b1d4044cf",
+        "20kg_nominal_b/combined_grf_com_lpt.png": "ced16a8b5fdbd976a389dac06affe22d74f2cfe56b92753f7d2e9e942594770e",
+        "20kg_nominal_b/contact_mechanics.png": "f2474a75576dd7b91a4702126cca9d491bfb845e0e4d3bee4ddac13b99833072",
+        "20kg_nominal_b/foot_kinematics.png": "c75e58c744bb30eeb83c91b1035d0602f8d0d8202d62ff818aed6f5b0d10d1e8",
+        "20kg_nominal_b/force_plate_metrics.png": "dc652c95a0e7be532e12cac1e3a9eceb37bf200207f44bd231c6a866b36b7360",
+        "20kg_nominal_b/global_kinematics.png": "2416a9335386c80e2c92ef5ce7c1ffcb84f24e55818dec432da91350df8edac0",
+        "20kg_nominal_b/joint_kinematics.png": "18bfaef5489a150f335a03f60ef1c9d97f70add0e16c3cb967c5908ddcbf4969",
+        "20kg_nominal_b/observable_fit.png": "bac25d6352491d2dd4d51d599ab274525594830678c55fab43ce1027dcd51af8",
+        "20kg_nominal_b/phase_events.png": "6016f9a0ec77a9e80960e4dd025362e1f1ffa36c06693483b6602c9426d5a5e5",
+        "20kg_nominal_b/summary_metrics.png": "9c443ac187d79718568fd5c4b706f62bc2f0291cefa6dd8815a2c445fb9f4fbb"
+      },
       "plots": [
         "20kg_nominal_b/observable_fit.png",
         "20kg_nominal_b/combined_grf_com_lpt.png",
@@ -118,6 +151,7 @@
         "20kg_nominal_b/global_kinematics.png",
         "20kg_nominal_b/foot_kinematics.png",
         "20kg_nominal_b/joint_kinematics.png",
+        "20kg_nominal_b/auxiliary_kinematics.png",
         "20kg_nominal_b/contact_mechanics.png",
         "20kg_nominal_b/phase_events.png",
         "20kg_nominal_b/summary_metrics.png"
@@ -173,6 +207,18 @@
       "parameter_config_sha256": "8b8eb825ad8c1960dcac1eca18c0f9a1116dc46fcbadfaf2fb88928064d7d5a6",
       "plant_model": "assets/loaded_cmj_model.xml",
       "plant_model_sha256": "54e092b2aefd664af64d1848a7cca0e82d1205156b0c79c00f9dbc70600f87e5",
+      "plot_sha256": {
+        "20kg_depth/auxiliary_kinematics.png": "83cef54fa1bf69dd3363527dd6bceb74f9e7ef90e50b4c54b4eacac4f1cbd9f0",
+        "20kg_depth/combined_grf_com_lpt.png": "27a894839a18df981c91c448b81331cd242bb219ab3e47ec4c42890db4b78aff",
+        "20kg_depth/contact_mechanics.png": "e15c44af56cc43644fff4383c8b006b2abeb8405cfa8a8ae2767463e9a9b59bd",
+        "20kg_depth/foot_kinematics.png": "1ae515bb272e86fabf8aa77fffcbdeb9b5e5060ecbf18c52b585218c8671fa0b",
+        "20kg_depth/force_plate_metrics.png": "ee29850609872719ca395b27979134540820ad21bb3ee4bb363945da20d93c96",
+        "20kg_depth/global_kinematics.png": "47ffbd7214d3902125b60990a089048cdcf5bfa2f4059287765053e2c21c2f49",
+        "20kg_depth/joint_kinematics.png": "769e119e28ca65ddc6a5de202de77ca90985f5eb0d737cabed642fe8a18b389d",
+        "20kg_depth/observable_fit.png": "8655c099ddbd32abb0ef9d91034e5fd0e832feab7051019a7146b5bfcd4f7fb6",
+        "20kg_depth/phase_events.png": "684010076aef5e4d0f8c8b6598ffb44f74865e252cf9dbb04a75722ea4a121d4",
+        "20kg_depth/summary_metrics.png": "cc7cae0d93ee7f06e575b4e13831b7b59780e67ae7e0aa41edf8d783b141af20"
+      },
       "plots": [
         "20kg_depth/observable_fit.png",
         "20kg_depth/combined_grf_com_lpt.png",
@@ -180,6 +226,7 @@
         "20kg_depth/global_kinematics.png",
         "20kg_depth/foot_kinematics.png",
         "20kg_depth/joint_kinematics.png",
+        "20kg_depth/auxiliary_kinematics.png",
         "20kg_depth/contact_mechanics.png",
         "20kg_depth/phase_events.png",
         "20kg_depth/summary_metrics.png"
@@ -235,6 +282,18 @@
       "parameter_config_sha256": "8b8eb825ad8c1960dcac1eca18c0f9a1116dc46fcbadfaf2fb88928064d7d5a6",
       "plant_model": "assets/loaded_cmj_model.xml",
       "plant_model_sha256": "54e092b2aefd664af64d1848a7cca0e82d1205156b0c79c00f9dbc70600f87e5",
+      "plot_sha256": {
+        "20kg_timing/auxiliary_kinematics.png": "f5d6b1b7a4d3959d52757ba43bfbeaa0daedeaef36b6e3d3ffcfe90c21d87ed1",
+        "20kg_timing/combined_grf_com_lpt.png": "d4ff46ff3dc91e1bdc584f07101e537f96265b14c2dddb25ca4f92997371fd22",
+        "20kg_timing/contact_mechanics.png": "42e6439bbf55fc09571e4af418eccb9b78ca9343e0bc1d961c9690735fa2e733",
+        "20kg_timing/foot_kinematics.png": "da9cbffb879619bc63f190f8ae0b40926e1f020d4f0cddf3357eb1d7b89a5d12",
+        "20kg_timing/force_plate_metrics.png": "ebac13104e2546b9a36498da8cbf1ebe6caa600d13782411ca8d3ab2650344b4",
+        "20kg_timing/global_kinematics.png": "16c344189c656b1cfa0f381dce391ba9479b5123726fd0ddb3526ec1a171ba52",
+        "20kg_timing/joint_kinematics.png": "ca03f8c9714e701325a509d2dd5edd00b8b9fa21a4e2ecd77aa4188691811558",
+        "20kg_timing/observable_fit.png": "88c37b5e63722b0c9d463a0c51484f909f1e825be9e007c043bd6642ed6eebbb",
+        "20kg_timing/phase_events.png": "5449d3f0db47e5155f514527adb8573fb898adf13e24c0b78ab60a1c34fae7af",
+        "20kg_timing/summary_metrics.png": "baa21c28f2ab612750b9e2d62a3e12e4f1dbfb21a5be3523e0698d84ca80b83f"
+      },
       "plots": [
         "20kg_timing/observable_fit.png",
         "20kg_timing/combined_grf_com_lpt.png",
@@ -242,6 +301,7 @@
         "20kg_timing/global_kinematics.png",
         "20kg_timing/foot_kinematics.png",
         "20kg_timing/joint_kinematics.png",
+        "20kg_timing/auxiliary_kinematics.png",
         "20kg_timing/contact_mechanics.png",
         "20kg_timing/phase_events.png",
         "20kg_timing/summary_metrics.png"
@@ -297,6 +357,18 @@
       "parameter_config_sha256": "8b8eb825ad8c1960dcac1eca18c0f9a1116dc46fcbadfaf2fb88928064d7d5a6",
       "plant_model": "assets/loaded_cmj_model.xml",
       "plant_model_sha256": "54e092b2aefd664af64d1848a7cca0e82d1205156b0c79c00f9dbc70600f87e5",
+      "plot_sha256": {
+        "20kg_depth_timing/auxiliary_kinematics.png": "3cbcc5c7f628806e417bca1da604d5d0a9564a70104bb0cfd4a777d209218756",
+        "20kg_depth_timing/combined_grf_com_lpt.png": "705e65fe2cc9040c1673cd2bfb6a718e32dcf41434096028d9bdc19d9e13cd1c",
+        "20kg_depth_timing/contact_mechanics.png": "bc771a3a9d63bec98b53b0851fe279692e26d15d2add390b403c8c7ebd58ffe6",
+        "20kg_depth_timing/foot_kinematics.png": "86f1ea3c333ea09a25d805e2938365e2b537ea0ef4d74a0ecb4dc3078b3140c2",
+        "20kg_depth_timing/force_plate_metrics.png": "84427f429dfdb737583d9d8644b0883cb09cc202ba1d826c3ff739789df9844c",
+        "20kg_depth_timing/global_kinematics.png": "3b1ed8a7d85bda972f28707c04acd238b807290dfe44dc9a6e50971e10022d8d",
+        "20kg_depth_timing/joint_kinematics.png": "e0d56ac4455435dd50fc8330d5b24e816dc40d1959712ab47a1105051c2d5c20",
+        "20kg_depth_timing/observable_fit.png": "0cc3f418fe17b4dd92ea2d38287d5eb5c2f1b19f8740d57688f5967806524f67",
+        "20kg_depth_timing/phase_events.png": "6983b8886279183c1b4179280483253923d1955af1ccb5d0a5fdf1a661d32e05",
+        "20kg_depth_timing/summary_metrics.png": "72a061eaa7c7d912f3dfcd7ae350ec1810f5a79fac5bdf05212a48e54a79da19"
+      },
       "plots": [
         "20kg_depth_timing/observable_fit.png",
         "20kg_depth_timing/combined_grf_com_lpt.png",
@@ -304,6 +376,7 @@
         "20kg_depth_timing/global_kinematics.png",
         "20kg_depth_timing/foot_kinematics.png",
         "20kg_depth_timing/joint_kinematics.png",
+        "20kg_depth_timing/auxiliary_kinematics.png",
         "20kg_depth_timing/contact_mechanics.png",
         "20kg_depth_timing/phase_events.png",
         "20kg_depth_timing/summary_metrics.png"
@@ -359,6 +432,19 @@
       "parameter_config_sha256": "8b8eb825ad8c1960dcac1eca18c0f9a1116dc46fcbadfaf2fb88928064d7d5a6",
       "plant_model": "assets/loaded_cmj_model.xml",
       "plant_model_sha256": "54e092b2aefd664af64d1848a7cca0e82d1205156b0c79c00f9dbc70600f87e5",
+      "plot_sha256": {
+        "20kg_bilateral_asymmetry/auxiliary_kinematics.png": "13a200cb12264e011088f98e238058d87ba352d672da0adf030671d2c228d513",
+        "20kg_bilateral_asymmetry/bilateral_force_asymmetry.png": "3b76aa58ee28c16b986f7780488b8ed4e641760d71acb9a71fe666dd3bd01a88",
+        "20kg_bilateral_asymmetry/combined_grf_com_lpt.png": "302cbab61bc47d25994529a291a40d0f8dad838351fa882bcf2210cd0f1f0678",
+        "20kg_bilateral_asymmetry/contact_mechanics.png": "8ebba9c2791da97d1f34a807c91b3ad04382880b6dcc1a4dbd0aaa608952a921",
+        "20kg_bilateral_asymmetry/foot_kinematics.png": "fba5249cb8d355dcbc7651cfbec16d1b1ffd832a17526a385f9968e95be16864",
+        "20kg_bilateral_asymmetry/force_plate_metrics.png": "5e5334c92bc26f82a8ec10bde81cc76d695d6b98aa48e709c028b7f1ca9e5fc7",
+        "20kg_bilateral_asymmetry/global_kinematics.png": "c71d3cd42a8abb1eb8ad8e8e5f3d7f9fe76956217049b1e34786963c620a5d09",
+        "20kg_bilateral_asymmetry/joint_kinematics.png": "67daf7f931fd45bbaedd689e209e279c92ea682ec6173aea8d32be87f71899ac",
+        "20kg_bilateral_asymmetry/observable_fit.png": "37424645c7ce4cf8012b495c1c9b38e0f7f073912cd0418dd3b040fb31036270",
+        "20kg_bilateral_asymmetry/phase_events.png": "318dad243e9b0bc82e628fed45723e2b0532d64513c6379b0f858e5a3ae756bb",
+        "20kg_bilateral_asymmetry/summary_metrics.png": "3797bb774b0c0fb9f2850085aa2e3038a9c9e730cc0b5c131afb6953e5ecd545"
+      },
       "plots": [
         "20kg_bilateral_asymmetry/observable_fit.png",
         "20kg_bilateral_asymmetry/combined_grf_com_lpt.png",
@@ -366,6 +452,7 @@
         "20kg_bilateral_asymmetry/global_kinematics.png",
         "20kg_bilateral_asymmetry/foot_kinematics.png",
         "20kg_bilateral_asymmetry/joint_kinematics.png",
+        "20kg_bilateral_asymmetry/auxiliary_kinematics.png",
         "20kg_bilateral_asymmetry/contact_mechanics.png",
         "20kg_bilateral_asymmetry/phase_events.png",
         "20kg_bilateral_asymmetry/summary_metrics.png",
@@ -402,5 +489,13 @@
     }
   ],
   "schema_version": "loaded-cmj-media-v1",
-  "scope": "PUBLICATION_SCOPE=20KG_SYSID_V0.1.0"
+  "scope": "PUBLICATION_SCOPE=20KG_SYSID_V0.1.0",
+  "visualization": {
+    "native_units_preserved": true,
+    "scenario_scale_policy": "common limits from all six frozen public scenarios",
+    "semantic_palette": "fixed color-blind-safe channel and region palette",
+    "side_encoding": "left solid; right dashed where side is not the primary comparison",
+    "source_encoding": "MuJoCo continuous line; observed sparse open markers",
+    "theme": "dark scientific instrument"
+  }
 }

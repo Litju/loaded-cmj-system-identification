@@ -15,6 +15,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.lines import Line2D
 
 import plot_observables as plotting
 from loaded_cmj.dataset import load_trial
@@ -28,25 +29,7 @@ ROOT = Path(__file__).resolve().parents[1]
 MEDIA_ROOT = ROOT / "media"
 PARAMETER_CONFIG = ROOT / "configs" / "synthetic_reference.json"
 IDENTIFICATION_DATA = ROOT / "data" / "identification_trials.json"
-COMMON_PLOT_FAMILY = (
-    "observable_fit.png",
-    "combined_grf_com_lpt.png",
-    "force_plate_metrics.png",
-    "global_kinematics.png",
-    "foot_kinematics.png",
-    "joint_kinematics.png",
-    "contact_mechanics.png",
-    "phase_events.png",
-    "summary_metrics.png",
-)
-SCENARIO_COLORS = (
-    "#55c7e8",
-    "#f2a65a",
-    "#9bd18b",
-    "#c59cf6",
-    "#f58c9b",
-    "#f0d264",
-)
+COMMON_PLOT_FAMILY = plotting.COMMON_PLOT_FAMILY
 
 
 def _sha256_bytes(value: bytes) -> str:
@@ -115,72 +98,79 @@ def _cross_style(ax: Any, title: str, ylabel: str | None = None) -> None:
 
 def _cross_save(fig: Any, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    fig.text(
-        0.995,
-        0.004,
-        "public observations | fixed 20 kg | same frozen trial definitions",
-        ha="right",
-        va="bottom",
-        color=plotting.MUTED,
-        fontsize=7,
-    )
     fig.savefig(path, dpi=170, facecolor=plotting.BACKGROUND, edgecolor=plotting.BACKGROUND)
     plt.close(fig)
 
 
 def _event_lines(ax: Any, trial: dict[str, Any], events: dict[str, Any] | None = None) -> None:
     events = trial["observed_events"] if events is None else events
-    for key, label, color in (
-        ("movement_onset_time_s", "onset", "#e9c46a"),
-        ("takeoff_time_s", "takeoff", "#6bc7a5"),
-        ("landing_time_s", "landing", "#e76f51"),
-    ):
+    for key, label in plotting.EVENT_LABELS.items():
         value = events.get(key)
         if value is None:
             continue
-        ax.axvline(float(value), color=color, linestyle="--", linewidth=0.75, alpha=0.7)
+        ax.axvline(float(value), color=plotting.EVENT_COLORS[key], linestyle=(0, (3, 2)), linewidth=0.8, alpha=0.85)
+        ax.text(float(value), 0.04, label, transform=ax.get_xaxis_transform(), color=plotting.EVENT_COLORS[key],
+                fontsize=7, rotation=90, va="bottom", ha="left")
 
 
-def _plot_scenario_overview(scenarios: list[dict[str, Any]], output: Path) -> None:
+def _plot_scenario_overview(scenarios: list[dict[str, Any]], output: Path, scales: dict[str, tuple[float, float]]) -> None:
     fig, axes = plt.subplots(3, 2, figsize=(13, 10), sharex=True, constrained_layout=True)
     fig.suptitle("Fixed 20 kg public scenarios — force and event overview", color=plotting.TEXT, fontsize=14, fontweight="bold")
-    for ax, scenario, color in zip(axes.flat, scenarios, SCENARIO_COLORS):
+    for ax, scenario in zip(axes.flat, scenarios):
         trial = scenario["trial"]
         observations = trial["observations"]
         time_s = np.asarray(observations["time_s"], dtype=float)
-        ax.plot(time_s, observations["fz_total_N"], color=color, linewidth=1.25, label="total Fz (N)")
+        ax.plot(time_s, observations["fz_total_N"], color=plotting.COLORS["total"], linewidth=1.8)
         _event_lines(ax, trial, scenario["result"]["events"])
         _cross_style(ax, scenario["scenario_id"], "total Fz (N)")
+        ax.set_ylim(*scales["force_N"])
         ax.set_xlim(float(time_s[0]), float(time_s[-1]))
-        ax.legend(loc="upper left", frameon=False, fontsize=7, labelcolor=plotting.TEXT)
+        ax.text(0.01, 0.90, "observed", transform=ax.transAxes, color=plotting.MUTED, fontsize=7)
     for ax in axes[-1]:
         ax.set_xlabel("time (s)", color=plotting.TEXT)
     _cross_save(fig, output)
 
 
-def _plot_grf_comparison(scenarios: list[dict[str, Any]], output: Path) -> None:
-    fig, axes = plt.subplots(3, 1, figsize=(13, 10), sharex=True, constrained_layout=True)
+def _plot_grf_comparison(scenarios: list[dict[str, Any]], output: Path, scales: dict[str, tuple[float, float]]) -> None:
+    fig, axes = plt.subplots(3, 2, figsize=(13, 12), sharex=True, constrained_layout=True)
     fig.suptitle("Fixed 20 kg public scenarios — bilateral force-platform comparison", color=plotting.TEXT, fontsize=14, fontweight="bold")
-    for ax, key, label in zip(axes, ("fz_left_N", "fz_right_N", "fz_total_N"), ("left Fz (N)", "right Fz (N)", "total Fz (N)")):
-        for scenario, color in zip(scenarios, SCENARIO_COLORS):
-            observations = scenario["trial"]["observations"]
-            ax.plot(observations["time_s"], observations[key], color=color, linewidth=1.15, label=scenario["scenario_id"])
-        _cross_style(ax, f"Observed {label}", label)
-        ax.legend(loc="upper left", ncol=3, frameon=False, fontsize=7, labelcolor=plotting.TEXT)
-    axes[-1].set_xlabel("time (s)", color=plotting.TEXT)
+    for ax, scenario in zip(axes.flat, scenarios):
+        observations = scenario["trial"]["observations"]
+        ax.plot(observations["time_s"], observations["fz_left_N"], color=plotting.COLORS["left"], linewidth=1.55)
+        ax.plot(observations["time_s"], observations["fz_right_N"], color=plotting.COLORS["right"], linewidth=1.55, linestyle="--")
+        ax.plot(observations["time_s"], observations["fz_total_N"], color=plotting.COLORS["total"], linewidth=2.0)
+        _event_lines(ax, scenario["trial"], scenario["result"]["events"])
+        _cross_style(ax, scenario["scenario_id"], "force (N)")
+        ax.set_ylim(*scales["force_N"])
+        ax.text(0.01, 0.90, "Left / Right / Total", transform=ax.transAxes, color=plotting.MUTED, fontsize=7)
+    for ax in axes[-1]:
+        ax.set_xlabel("time (s)", color=plotting.TEXT)
+    axes[0, 0].legend(handles=[
+        Line2D([], [], color=plotting.COLORS["left"], linewidth=2, label="Left"),
+        Line2D([], [], color=plotting.COLORS["right"], linewidth=2, linestyle="--", label="Right"),
+        Line2D([], [], color=plotting.COLORS["total"], linewidth=2, label="Total"),
+    ], loc="upper right", frameon=True, facecolor=plotting.BACKGROUND, edgecolor=plotting.GRID, fontsize=7, labelcolor=plotting.TEXT)
     _cross_save(fig, output)
 
 
-def _plot_lpt_comparison(scenarios: list[dict[str, Any]], output: Path) -> None:
-    fig, axes = plt.subplots(2, 1, figsize=(13, 7.5), sharex=True, constrained_layout=True)
+def _plot_lpt_comparison(scenarios: list[dict[str, Any]], output: Path, scales: dict[str, tuple[float, float]]) -> None:
+    fig, axes = plt.subplots(6, 2, figsize=(13, 18), sharex="col", constrained_layout=True)
     fig.suptitle("Fixed 20 kg public scenarios — bar/LPT comparison", color=plotting.TEXT, fontsize=14, fontweight="bold")
-    for ax, key, label in zip(axes, ("bar_displacement_m", "bar_velocity_m_s"), ("bar displacement (m)", "bar velocity (m/s)")):
-        for scenario, color in zip(scenarios, SCENARIO_COLORS):
-            observations = scenario["trial"]["observations"]
-            ax.plot(observations["time_s"], observations[key], color=color, linewidth=1.15, label=scenario["scenario_id"])
-        _cross_style(ax, f"Observed {label} — LPT is bar-only", label)
-        ax.legend(loc="upper left", ncol=3, frameon=False, fontsize=7, labelcolor=plotting.TEXT)
-    axes[-1].set_xlabel("time (s)", color=plotting.TEXT)
+    for row, scenario in enumerate(scenarios):
+        observations = scenario["trial"]["observations"]
+        for column, (key, label, color, group) in enumerate((
+            ("bar_displacement_m", "bar displacement (m)", plotting.COLORS["lpt_displacement"], "lpt_displacement_m"),
+            ("bar_velocity_m_s", "bar velocity (m/s)", plotting.COLORS["lpt_velocity"], "lpt_velocity_m_s"),
+        )):
+            ax = axes[row, column]
+            ax.plot(observations["time_s"], observations[key], color=color, linewidth=1.75,
+                    marker="o", markevery=max(1, len(observations[key]) // 18), markersize=3,
+                    markerfacecolor=plotting.BACKGROUND, markeredgecolor=color, markeredgewidth=0.7)
+            _event_lines(ax, scenario["trial"], scenario["result"]["events"])
+            _cross_style(ax, f"{scenario['scenario_id']} · {label}", label)
+            ax.set_ylim(*scales[group])
+    axes[-1, 0].set_xlabel("time (s)", color=plotting.TEXT)
+    axes[-1, 1].set_xlabel("time (s)", color=plotting.TEXT)
     _cross_save(fig, output)
 
 
@@ -190,14 +180,16 @@ def _plot_event_timing_comparison(scenarios: list[dict[str, Any]], output: Path)
     x = np.arange(len(scenarios), dtype=float)
     width = 0.24
     fig, ax = plt.subplots(1, 1, figsize=(13, 6), constrained_layout=True)
-    for offset, (key, label, color) in enumerate(zip(keys, labels, ("#e9c46a", "#6bc7a5", "#e76f51"))):
+    for offset, (key, label) in enumerate(zip(keys, labels)):
         values = [float(scenario["result"]["events"][key]) for scenario in scenarios]
-        ax.bar(x + (offset - 1) * width, values, width, label=label, color=color)
+        ax.bar(x + (offset - 1) * width, values, width, label=label, color=plotting.EVENT_COLORS[key])
     ax.set_xticks(x, [scenario["scenario_id"] for scenario in scenarios], rotation=20, ha="right")
     ax.set_ylabel("event time (s)", color=plotting.TEXT)
     ax.set_xlabel("frozen public scenario", color=plotting.TEXT)
     _cross_style(ax, "Observed event timing across fixed 20 kg scenarios")
-    ax.legend(frameon=False, labelcolor=plotting.TEXT)
+    legend = ax.legend(frameon=False, labelcolor=plotting.TEXT)
+    for text in legend.get_texts():
+        text.set_color(plotting.TEXT)
     _cross_save(fig, output)
 
 
@@ -206,29 +198,50 @@ def _plot_bilateral_comparison(scenarios: list[dict[str, Any]], output: Path) ->
     asymmetry = next(scenario for scenario in scenarios if scenario["scenario_id"] == "20kg_bilateral_asymmetry")
     fig, axes = plt.subplots(2, 1, figsize=(13, 7.5), sharex=True, constrained_layout=True)
     fig.suptitle("Nominal versus controlled synthetic bilateral drive excitation", color=plotting.TEXT, fontsize=14, fontweight="bold")
-    for scenario, linestyle, alpha in ((nominal, "--", 0.72), (asymmetry, "-", 1.0)):
+    markevery = max(1, len(nominal["trial"]["observations"]["time_s"]) // 18)
+    for scenario, linestyle, alpha in ((nominal, "--", 0.68), (asymmetry, "-", 1.0)):
         observations = scenario["trial"]["observations"]
         time_s = observations["time_s"]
-        axes[0].plot(time_s, observations["fz_left_N"], color="#55c7e8", linestyle=linestyle, alpha=alpha, label=f"{scenario['scenario_id']} left")
-        axes[0].plot(time_s, observations["fz_right_N"], color="#f2a65a", linestyle=linestyle, alpha=alpha, label=f"{scenario['scenario_id']} right")
+        axes[0].plot(time_s, observations["fz_left_N"], color=plotting.COLORS["left"], linestyle=linestyle,
+                     alpha=alpha, linewidth=1.8, marker="o", markevery=markevery, markersize=3.0,
+                     markerfacecolor=plotting.BACKGROUND, markeredgecolor=plotting.COLORS["left"], markeredgewidth=0.7)
+        axes[0].plot(time_s, observations["fz_right_N"], color=plotting.COLORS["right"], linestyle=linestyle,
+                     alpha=alpha, linewidth=1.8, marker="s", markevery=markevery, markersize=2.8,
+                     markerfacecolor=plotting.BACKGROUND, markeredgecolor=plotting.COLORS["right"], markeredgewidth=0.7)
         difference = np.asarray(observations["fz_left_N"], dtype=float) - np.asarray(observations["fz_right_N"], dtype=float)
-        axes[1].plot(time_s, difference, color="#f0d264" if scenario is asymmetry else "#9aa6b2", linestyle=linestyle, alpha=alpha, label=f"{scenario['scenario_id']} L−R")
+        axes[1].plot(time_s, difference, color=plotting.WARM_GOLD, linestyle=linestyle, alpha=alpha, linewidth=1.8)
     _cross_style(axes[0], "Observed bilateral vertical forces", "force (N)")
     _cross_style(axes[1], "Signed physical difference: left Fz − right Fz", "difference (N)")
     axes[1].axhline(0.0, color=plotting.SPINE, linewidth=0.7)
-    axes[0].legend(loc="upper left", ncol=2, frameon=False, fontsize=8, labelcolor=plotting.TEXT)
-    axes[1].legend(loc="upper left", ncol=2, frameon=False, fontsize=8, labelcolor=plotting.TEXT)
+    axes[0].legend(handles=[
+        Line2D([], [], color=plotting.COLORS["left"], linewidth=2, marker="o", markersize=4,
+               markerfacecolor=plotting.BACKGROUND, label="Left"),
+        Line2D([], [], color=plotting.COLORS["right"], linewidth=2, marker="s", markersize=4,
+               markerfacecolor=plotting.BACKGROUND, label="Right"),
+        Line2D([], [], color=plotting.TEXT, linewidth=2, linestyle="-", label="α = 0.02"),
+        Line2D([], [], color=plotting.TEXT, linewidth=1.2, linestyle="--", alpha=0.68, label="Nominal"),
+    ], loc="upper left", ncol=2, frameon=True, facecolor=plotting.BACKGROUND, edgecolor=plotting.GRID, fontsize=8, labelcolor=plotting.TEXT)
+    axes[1].legend(handles=[Line2D([], [], color=plotting.WARM_GOLD, linewidth=2, label="Left − right"),
+                            Line2D([], [], color=plotting.TEXT, linewidth=2, linestyle="-", label="α = 0.02"),
+                            Line2D([], [], color=plotting.TEXT, linewidth=1.2, linestyle="--", alpha=0.68, label="Nominal")],
+                   loc="upper left", frameon=True, facecolor=plotting.BACKGROUND, edgecolor=plotting.GRID, fontsize=8, labelcolor=plotting.TEXT)
     axes[-1].set_xlabel("time (s)", color=plotting.TEXT)
     _cross_save(fig, output)
 
 
-def _render_one(trial: dict[str, Any], output_dir: Path, *, render: bool = True) -> dict[str, Any]:
+def _render_one(
+    trial: dict[str, Any],
+    result: dict[str, Any],
+    output_dir: Path,
+    scales: dict[str, tuple[float, float]],
+    *,
+    render: bool = True,
+) -> dict[str, Any]:
     scenario_id = str(trial["trial_id"])
     output_dir.mkdir(parents=True, exist_ok=True)
-    result = simulate_trial(load_named_parameters("synthetic_reference"), trial)
     if not result["valid"]:
         raise RuntimeError(f"invalid production rollout for {scenario_id}")
-    plot_names = plotting.render_scenario(trial, result, output_dir)
+    plot_names = plotting.render_scenario(trial, result, output_dir, scale_context=scales)
     render_path = output_dir / "render.mp4"
     if render:
         render_main([
@@ -242,7 +255,8 @@ def _render_one(trial: dict[str, Any], output_dir: Path, *, render: bool = True)
         raise FileNotFoundError(f"cannot reuse incomplete render bundle for {scenario_id}")
     video_info = _video_info(render_path)
     preview_path = output_dir / "preview.png"
-    _write_preview(render_path, preview_path, result["events"]["takeoff_time_s"], video_info["duration_s"])
+    if render or not preview_path.exists():
+        _write_preview(render_path, preview_path, result["events"]["takeoff_time_s"], video_info["duration_s"])
     from plot_bilateral_asymmetry import main as bilateral_main
 
     if scenario_id == "20kg_bilateral_asymmetry":
@@ -283,6 +297,10 @@ def _manifest_entry(scenario: dict[str, Any], output_root: Path) -> dict[str, An
         "preview": relative(scenario["preview_path"]),
         "plots": [relative(output_dir / name) for name in scenario["plot_names"]],
         "render_provenance": relative(output_dir / "render_provenance.json"),
+        "plot_sha256": {
+            relative(output_dir / name): _sha256_file(output_dir / name)
+            for name in scenario["plot_names"]
+        },
         "render_resolution": [video_info["width"], video_info["height"]],
         "fps": video_info["fps"],
         "duration_s": video_info["duration_s"],
@@ -317,17 +335,31 @@ def generate(output_root: Path = MEDIA_ROOT, *, render: bool = True) -> dict[str
     if any(float(trial["external_load_kg"]) != 20.0 for trial in trials):
         raise RuntimeError("media suite requires every scenario to use external_load_kg=20.0")
 
-    scenarios = []
+    scenarios: list[dict[str, Any]] = []
     for trial in trials:
         scenario_id = trial["trial_id"]
-        print(f"Generating media bundle: {scenario_id}", flush=True)
-        scenarios.append(_render_one(trial, output_root / scenario_id, render=render))
+        print(f"Preparing media bundle: {scenario_id}", flush=True)
+        result = simulate_trial(load_named_parameters("synthetic_reference"), trial)
+        scenarios.append({
+            "scenario_id": scenario_id,
+            "trial": trial,
+            "result": result,
+            "output_dir": output_root / scenario_id,
+        })
+
+    scales = plotting.build_scale_context(scenarios)
+    scenarios = [
+        _render_one(
+            scenario["trial"], scenario["result"], scenario["output_dir"], scales, render=render,
+        )
+        for scenario in scenarios
+    ]
 
     comparison_dir = output_root / "comparison"
     comparison_dir.mkdir(parents=True, exist_ok=True)
-    _plot_scenario_overview(scenarios, comparison_dir / "scenario_overview.png")
-    _plot_grf_comparison(scenarios, comparison_dir / "grf_comparison.png")
-    _plot_lpt_comparison(scenarios, comparison_dir / "lpt_comparison.png")
+    _plot_scenario_overview(scenarios, comparison_dir / "scenario_overview.png", scales)
+    _plot_grf_comparison(scenarios, comparison_dir / "grf_comparison.png", scales)
+    _plot_lpt_comparison(scenarios, comparison_dir / "lpt_comparison.png", scales)
     _plot_event_timing_comparison(scenarios, comparison_dir / "event_timing_comparison.png")
     _plot_bilateral_comparison(scenarios, comparison_dir / "bilateral_comparison.png")
 
@@ -345,6 +377,14 @@ def generate(output_root: Path = MEDIA_ROOT, *, render: bool = True) -> dict[str
             "plant_model_sha256": _sha256_file(ROOT / "assets" / "loaded_cmj_model.xml"),
         },
         "common_plot_family": list(COMMON_PLOT_FAMILY),
+        "visualization": {
+            "theme": "dark scientific instrument",
+            "semantic_palette": "fixed color-blind-safe channel and region palette",
+            "source_encoding": "MuJoCo continuous line; observed sparse open markers",
+            "side_encoding": "left solid; right dashed where side is not the primary comparison",
+            "scenario_scale_policy": "common limits from all six frozen public scenarios",
+            "native_units_preserved": True,
+        },
         "scenarios": [_manifest_entry(scenario, output_root) for scenario in scenarios],
         "comparison": {
             "scenario_overview": relative(comparison_dir / "scenario_overview.png"),
@@ -352,6 +392,13 @@ def generate(output_root: Path = MEDIA_ROOT, *, render: bool = True) -> dict[str
             "lpt_comparison": relative(comparison_dir / "lpt_comparison.png"),
             "event_timing_comparison": relative(comparison_dir / "event_timing_comparison.png"),
             "bilateral_comparison": relative(comparison_dir / "bilateral_comparison.png"),
+            "sha256": {
+                relative(comparison_dir / name): _sha256_file(comparison_dir / name)
+                for name in (
+                    "scenario_overview.png", "grf_comparison.png", "lpt_comparison.png",
+                    "event_timing_comparison.png", "bilateral_comparison.png",
+                )
+            },
         },
     }
     manifest_path = output_root / "MANIFEST.json"
