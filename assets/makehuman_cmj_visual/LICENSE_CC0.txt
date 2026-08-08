@@ -1,16 +1,47 @@
 MakeHuman CMJ visual asset license note
 =======================================
 
-This project treats the exported MakeHuman core body asset as CC0 for the
-included render-only visualization, based on MakeHuman core/exported asset
-licensing for official MakeHuman exports.
+The included core/exported MakeHuman visual asset is retained as CC0 for the
+render-only visualization, consistent with the official MakeHuman Community
+asset/export licensing guidance.
 
 The copied OBJ/MTL headers identify the exporter/source as:
   www.makehumancommunity.org
 
 Useful upstream references:
   https://www.makehumancommunity.org/
+  https://static.makehumancommunity.org/about/license.html
+  https://static.makehumancommunity.org/assets/assetpacks/index.html
+  https://creativecommons.org/publicdomain/zero/1.0/
   https://static.makehumancommunity.org/makehuman/docs/licensing.html
+  https://static.makehumancommunity.org/makehuman/faq/are_makehuman_files_free.html
+  https://static.makehumancommunity.org/makehuman/faq/can_i_sell_models_created_with_makehuman.html
+
+Research citation and acknowledgment
+-------------------------------------
+
+The official license page states that MakeHuman core assets are CC0 and that
+attribution is not required for that core-asset pathway. The official asset
+pack catalog is not a blanket CC0 grant: it separately lists CC0 and CC-BY
+packs. This record applies to the owner-exported core body and eye texture
+listed in `FILES_COPIED.md`; no community asset pack is claimed here. If a
+future visual change adds a pack asset, check that pack's individual license
+and retain its attribution requirements.
+
+This research repository nevertheless acknowledges the source as a matter of
+scientific provenance. Cite the MakeHuman Community as the software/asset
+source and cite the modelling-framework paper listed in `docs/references.bib`:
+
+  MakeHuman Community. MakeHuman Community. Official project and asset
+  documentation. https://www.makehumancommunity.org/
+
+  Briceno, L.; Paul, G. (2019). MakeHuman: A Review of the Modelling
+  Framework. Advances in Intelligent Systems and Computing, 822, 224–232.
+  https://doi.org/10.1007/978-3-319-96077-7_23
+
+The exact MakeHuman application release used for the owner export was not
+recorded in the asset metadata. The local `v1py3` export-directory name is not
+treated as a verified application version.
 
 No real-person likeness, logo, brand asset, or non-MakeHuman third-party visual
 asset was added. If a stricter upstream license is later identified for any

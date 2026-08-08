@@ -22,6 +22,8 @@ intentional and is not hidden by the documentation.
   available without adding the source checkout to this tree.
 - [x] Tests cover model integrity, deterministic mechanics, data/preprocessing,
   and optional source equivalence.
+- [x] MakeHuman source/asset acknowledgment, CC0 notice, provenance, and
+  scholarly citation are included separately from the Apache-2.0 code license.
 
 ## Owner actions before external publication
 
@@ -33,11 +35,10 @@ fabricated locally:
 - [ ] Add the hosted repository URL to `CITATION.cff` once a repository exists.
 - [ ] Add a DOI or archival identifier only after one has actually been issued.
 - [ ] Confirm the public repository name, versioning policy, and release date.
-- [ ] Review the retained MakeHuman/CC0 asset records and any additional
+- [ ] Reconfirm the retained MakeHuman/CC0 asset records and any additional
   third-party notices at the publication destination.
 - [ ] Run the fresh-environment commands in `docs/reproducibility.md` and
   attach the final qualification record to the release review.
 
 The absence of a URL or DOI in the current citation file is deliberate: there
 is no repository to cite yet.
-

@@ -38,3 +38,36 @@ bar/LPT channels, contact states, and event timing.
 
 The source checkout is not vendored into the target and is not modified by the
 equivalence audit.
+
+## MakeHuman citation and acknowledgment
+
+The athlete visual is an owner-exported MakeHuman core body asset. The original
+DAE/OBJ/MTL/eye-texture files are retained, while the renderer additionally
+uses generated segment and skin files documented in `MODIFICATIONS.md` and
+`FILES_COPIED.md`. Those generated files are visualization transformations;
+they do not enter the dynamics or measurement model.
+
+The official MakeHuman Community license page identifies the core/exported
+asset pathway as CC0, so attribution is not a legal condition for this
+pathway. The official asset-pack catalog distinguishes CC0 packs from CC-BY
+packs; it must not be read as a blanket license for every MakeHuman-community
+asset. The inventory above contains an owner-exported core body and eye
+texture, not a downloaded community asset pack. Any future addition must be
+checked against its individual pack notice.
+
+The project nevertheless cites the source because this is a research artifact.
+Use both the software/asset acknowledgment and the modelling-framework
+publication:
+
+> MakeHuman Community. *MakeHuman Community*. Official project and asset
+> documentation. <https://static.makehumancommunity.org/about/license.html>
+> Asset-pack catalog: <https://static.makehumancommunity.org/assets/assetpacks/index.html>
+
+> Briceno, L.; Paul, G. (2019). *MakeHuman: A Review of the Modelling
+> Framework*. Advances in Intelligent Systems and Computing, 822, 224–232.
+> <https://doi.org/10.1007/978-3-319-96077-7_23>
+
+The machine-local export path records `v1py3`, but the exact MakeHuman release
+was not captured in the exported metadata. This repository deliberately does
+not invent a version number. The structured BibTeX records are in
+[`docs/references.bib`](references.bib).

@@ -179,6 +179,15 @@ its CC0 notice and provenance records in
 `assets/makehuman_cmj_visual/`; those records apply to the visual asset family
 and are separate from the code license.
 
+The MakeHuman visual source is acknowledged and cited even though the official
+MakeHuman asset guidance describes the core/exported asset pathway as CC0.
+See [`docs/provenance.md`](docs/provenance.md) and
+[`docs/references.bib`](docs/references.bib) for the recommended software/asset
+acknowledgment and the modelling-framework publication.
+The official asset-pack catalog distinguishes CC0 and CC-BY packs; the local
+inventory is an owner-exported core body/eye texture, not a downloaded
+community pack.
+
 The citation file intentionally contains no repository URL or DOI because no
 hosted repository or archival record exists yet. Replace the accountable author
 metadata and add those identifiers only when they are real; see
@@ -189,4 +198,11 @@ metadata and add those identifiers only when they are real; see
 
 - MuJoCo documentation: <https://mujoco.readthedocs.io/>
 - MakeHuman community licensing information:
-  <https://static.makehumancommunity.org/makehuman/docs/licensing.html>
+  <https://static.makehumancommunity.org/about/license.html>
+- MakeHuman Community asset-pack catalog:
+  <https://static.makehumancommunity.org/assets/assetpacks/index.html>
+- MakeHuman Community, official project and asset documentation:
+  <https://www.makehumancommunity.org/>
+- Briceno, L.; Paul, G. (2019), “MakeHuman: A Review of the Modelling
+  Framework,” *Advances in Intelligent Systems and Computing*, 822, 224–232:
+  <https://doi.org/10.1007/978-3-319-96077-7_23>
