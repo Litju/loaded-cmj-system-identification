@@ -40,6 +40,9 @@ SPINE = "#65717d"
 OBSERVED = "#8bdcff"
 MUJOCO = "#f4d35e"
 MUJOCO_DIM = "#d9bb4b"
+COM_ORANGE = "#ff9f43"
+LPT_DISPLACEMENT_RED = "#ff4d6d"
+LPT_DISPLACEMENT_OBSERVED = "#ff9eae"
 EVENT = "#f2f2f2"
 PHASE_COLORS = (
     "#355070",  # weighing
@@ -125,6 +128,7 @@ def _plot_mujoco(
     linestyle: str = "-",
     alpha: float = 0.96,
     linewidth: float = 1.05,
+    color: str = MUJOCO,
 ) -> None:
     time = list(time_s)
     series = list(values)
@@ -134,14 +138,14 @@ def _plot_mujoco(
     ax.plot(
         time,
         series,
-        color=MUJOCO,
+        color=color,
         linestyle=linestyle,
         linewidth=linewidth,
         marker="o",
         markersize=2.0,
         markevery=markevery,
-        markerfacecolor=MUJOCO,
-        markeredgecolor=MUJOCO,
+        markerfacecolor=color,
+        markeredgecolor=color,
         markeredgewidth=0.25,
         alpha=alpha,
         label=label,
@@ -156,11 +160,12 @@ def _plot_observed(
     label: str,
     *,
     linewidth: float = 1.55,
+    color: str = OBSERVED,
 ) -> None:
     ax.plot(
         list(time_s),
         list(values),
-        color=OBSERVED,
+        color=color,
         linewidth=linewidth,
         linestyle="-",
         label=label,
@@ -332,17 +337,29 @@ def _combined_grf_com_lpt(result: dict[str, Any], observed: dict[str, Any]) -> N
     _plot_observed(host, observed_time, observed["fz_total_N"], "observed total GRF")
     _style_axis(host, "Force-platform GRFs + COM + LPT (native scales)", "GRF (N)")
 
-    _plot_mujoco(com_axis, time_s, traces["com_z_m"], "MuJoCo COM z")
+    _plot_mujoco(com_axis, time_s, traces["com_z_m"], "MuJoCo COM z", color=COM_ORANGE)
     _plot_mujoco(velocity_axis, time_s, traces["bar_velocity_m_s"], "MuJoCo LPT/bar velocity")
     _plot_observed(velocity_axis, observed_time, observed["bar_velocity_m_s"], "observed LPT/bar velocity")
-    _plot_mujoco(displacement_axis, time_s, traces["bar_displacement_m"], "MuJoCo LPT/bar displacement")
-    _plot_observed(displacement_axis, observed_time, observed["bar_displacement_m"], "observed LPT/bar displacement")
+    _plot_mujoco(
+        displacement_axis,
+        time_s,
+        traces["bar_displacement_m"],
+        "MuJoCo LPT/bar displacement",
+        color=LPT_DISPLACEMENT_RED,
+    )
+    _plot_observed(
+        displacement_axis,
+        observed_time,
+        observed["bar_displacement_m"],
+        "observed LPT/bar displacement",
+        color=LPT_DISPLACEMENT_OBSERVED,
+    )
 
     for axis, label, color in (
         (host, "GRF (N)", TEXT),
-        (com_axis, "COM z (m)", MUJOCO),
+        (com_axis, "COM z (m)", COM_ORANGE),
         (velocity_axis, "LPT velocity (m/s)", OBSERVED),
-        (displacement_axis, "LPT displacement (m)", OBSERVED),
+        (displacement_axis, "LPT displacement (m)", LPT_DISPLACEMENT_RED),
     ):
         axis.set_ylabel(label, color=color)
         axis.tick_params(axis="y", colors=color, labelsize=8)
