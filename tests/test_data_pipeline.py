@@ -8,6 +8,7 @@ import numpy as np
 
 from loaded_cmj.dataset import generate_dataset, load_dataset, load_trial, load_trials
 from loaded_cmj.identification import DEFAULT_FIT_COORDINATES, identify_parameters
+from loaded_cmj.measurements import MEASUREMENT_CHANNELS
 from loaded_cmj.parameters import default_parameters, load_named_parameters, parameter_schema
 from loaded_cmj.preprocessing import comparison_grid, preprocess_observations
 from loaded_cmj.validation import _physical_metrics, validate_trial
@@ -90,6 +91,11 @@ def test_preprocessing_preserves_units_and_grid() -> None:
 def test_bilateral_force_surface_aggregates_exactly_and_lpt_is_bar_only() -> None:
     preprocessing = json.loads(
         (Path(__file__).resolve().parents[1] / "configs" / "preprocessing.json").read_text()
+    )
+    assert MEASUREMENT_CHANNELS["force_platform"]["channels"][:3] == (
+        "fz_left_N",
+        "fz_right_N",
+        "fz_total_N",
     )
     assert "fz_left_N" in preprocessing["measurement_surface"]["force_aggregation"]
     assert preprocessing["lpt"]["interpretation"] == (
