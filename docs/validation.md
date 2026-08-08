@@ -5,6 +5,11 @@ physical units. It is separate from fitting and is intended to expose where a
 parameter configuration agrees or disagrees with the measurement and mechanics
 contracts.
 
+`@komi_2003` informs literature-aware CMJ/landing plausibility language, while
+`@khalil_2002`, `@tedrake_underactuated_2024`, and `@brogliato_1996` inform the
+stability, hybrid-event, and contact reasoning. These references do not make
+the synthetic held-out results experimental or clinical validation.
+
 Every checked-in validation trial uses the fixed 20 kg external load. The split
 retains same-load depth, timing, measurement-realization, contact, and
 repeatability coverage rather than varying the external load.

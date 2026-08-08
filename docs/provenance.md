@@ -1,105 +1,146 @@
 # Provenance
 
-This checkout is a local Git repository prepared for owner review. It has no
-hosted repository, remote URL, DOI, or published release yet. The provenance
-boundary is therefore expressed through tracked files, retained notices, and a
-read-only external source-equivalence harness rather than through a web-hosted
-release record.
+This release is a fixed-20-kg, synthetic Loaded CMJ system-identification
+study. The public model is a first-party rigid-body/contact/actuator and
+measurement abstraction. The citation boundary is intentionally explicit:
+published sources inform methods, measurement interpretation, validation
+language, and software/asset acknowledgment; they do not supply the plant's
+numerical parameters.
 
-The plant and renderer are direct ports of the source scientific files, with
-repository paths adapted to `assets/`, `configs/`, and `src/loaded_cmj/`. The
-MJCF and parameter schema remain the authority for morphology, topology,
-physical arrays, names, units, bounds, and ordering.
+The complete source-to-code records are in
+[`docs/reference_map.md`](reference_map.md). This document states the public
+scientific boundary without exposing development-task archaeology.
 
-## Public study identity and evidence roles
+## FIRST-PARTY IMPLEMENTED MODEL
 
-The public release is a fixed-20 kg loaded CMJ system-identification study. The
-model is a synthetic rigid-body multibody abstraction. The committed source
-MJCF/plant snapshot is the direct model authority; the public parameter values,
-phase controller, contact settings, measurement noise, and bilateral alpha are
-first-party engineering or synthetic choices recorded in the repository. No
-external paper is presented as the source of those numerical values.
+The scientific authority is the committed repository implementation:
 
-| Evidence item | Role | Boundary |
-| --- | --- | --- |
-| Committed source MJCF and direct plant port | `DIRECT_MODEL_BASIS` | Authority for morphology, contacts, actuators, integration, and telemetry semantics |
-| `configs/param_schema.json` and named configurations | `PARAMETER_SOURCE` | First-party parameter contract and synthetic reference values; not a literature-derived subject model |
-| `configs/preprocessing.json` and `src/loaded_cmj/measurements.py` | `MEASUREMENT_METHOD_SOURCE` | Source-defined force-platform and bar/LPT transformation and units |
-| Deterministic mechanics/tests and `data/validation_trials.json` | `VALIDATION_SOURCE` | Internal computational qualification, not human validation |
-| MuJoCo documentation and software paper | `SOFTWARE_ASSET_REFERENCE` | Software implementation, contact, integration, and rendering reference |
-| NumPy and SciPy software papers | `SOFTWARE_ASSET_REFERENCE` | Numerical-array and bounded-optimization software actually used by the target |
-| MakeHuman Community documentation | `SOFTWARE_ASSET_REFERENCE` | Visual asset and license pathway only |
-| Briceno and Paul (2019) | `GENERAL_BACKGROUND` | MakeHuman framework background only; not model-parameter provenance |
+- `assets/loaded_cmj_model.xml` defines the linked sagittal topology, bilateral
+  lower limbs, articulated hindfoot/forefoot/toe structure, contacts, bar/rack,
+  tendons, actuators, sensors, timestep, and solver settings.
+- `src/loaded_cmj/plant.py` and `src/loaded_cmj/clean_core.py` implement forward
+  dynamics, phase-aware control, contact-wrench collection, force-platform
+  channels, bar/LPT channels, events, impulse, and summary mechanics.
+- `src/loaded_cmj/model.py` and `tests/test_model_integrity.py` protect the
+  compiled model contract (`nq=21`, `nv=21`, `nu=6` and the recorded topology
+  and solver settings).
+- `configs/param_schema.json`, the named configurations, and
+  `tools/generate_dataset.py` are the first-party parameter and synthetic-data
+  authorities. The current identification schema has 27 scalar coordinates.
 
-The six conditions, alpha pilot rule, seeds, same-load validation design, and
-rendering outputs are synthetic engineering assumptions. They are explicitly
-identified as such rather than assigned generic literature support.
+These files are `DIRECT_MODEL_BASIS` and, where applicable, first-party
+`PARAMETER_SOURCE` evidence. They are not entries in the literature
+bibliography. No external paper is claimed as the source of the morphology,
+segment geometry, COMs, inertias, joint ranges, actuator values, contact
+values, bar/rack values, sensor imperfections, event thresholds, or fitted
+bounds.
 
-The MakeHuman visual family is preserved under
-`assets/makehuman_cmj_visual/`. Its CC0 notice, export provenance, modification
-record, copied-file manifest, mesh segments, native skin scene, bone mapping,
-and texture are retained. The visual model is a render-only overlay driven by
-exact plant landmarks and has no effect on dynamics or measurements.
+## LITERATURE-DERIVED ELEMENTS
 
-The equivalence utility in `tools/equivalence_harness.py` accepts a separately
-located source checkout at runtime, so source-comparison paths and dumps are not
-part of this tracked tree. Its scope is structural and behavioral equivalence:
-compiled model signatures, qpos/qvel, bilateral force-platform channels,
-bar/LPT channels, contact states, and event timing.
+No retained external reference is classified `DIRECT_MODEL_BASIS` or
+`PARAMETER_SOURCE`. Consequently, this release makes no claim that the model
+is “based on” a named anthropometry, contact, actuator, or biomechanics source.
+The model's topology and numerical values remain first-party engineering
+choices and synthetic data-design choices.
 
-## Tracked provenance records
+## LITERATURE-INFORMED METHODS
 
-- `assets/loaded_cmj_model.xml`: authoritative MuJoCo model file;
-- `src/loaded_cmj/plant.py`: direct scientific plant/telemetry/event port;
-- `configs/param_schema.json`: parameter contract;
-- `configs/preprocessing.json`: measurement and validation contract;
-- `data/dataset_manifest.json`: dataset and selected artifact hashes;
-- `assets/makehuman_cmj_visual/LICENSE_CC0.txt`: asset-family license notice;
-- `assets/makehuman_cmj_visual/PROVENANCE.md`, `MODIFICATIONS.md`, and
-  `FILES_COPIED.md`: visual asset lineage and changes;
-- `media/MANIFEST.json`: scenario-level media inventory, trial identity, and
-  derived-artifact hashes;
-- `media/<scenario>/render_provenance.json`: renderer artifact metadata and
-  sampling record for the matching production trial.
+The methods bibliography records conceptual guidance that was explicitly used
+during development and verification:
 
-The source checkout is not vendored into the target and is not modified by the
-equivalence audit.
+- rigid-body, constrained, floating-base, and contact reasoning:
+  `@lynch_park_2017`, `@tedrake_underactuated_2024`, `@featherstone_2008`,
+  `@shabana_2010`, and `@brogliato_1996`;
+- sampled measurement and plant/controller/sensor separation:
+  `@zatsiorsky_kinematics_1998`, `@astrom_murray_2008`, and
+  `@sarkka_svensson_2023`;
+- bounded optimization, model structure, system identification, and
+  validation discipline: `@nocedal_wright_2006`, `@ljung_1999`, and
+  `@beck_1979`.
 
-The complete two-bundle checksum, conflict-resolution, reference-role, and
-first-party-assumption record is in
-[`docs/evidence/gate9_provenance.md`](evidence/gate9_provenance.md). Both
-bundles were treated as evidence only; primary source code, current target Git
-history, and current validation evidence override stale bundle metadata.
+These references support method vocabulary and verification reasoning. They do
+not imply reproduction of a named algorithm beyond what the committed code
+actually does, and they do not provide task-specific numerical values.
 
-## MakeHuman citation and acknowledgment
+## LITERATURE-INFORMED VALIDATION
 
-The athlete visual is an owner-exported MakeHuman core body asset. The original
-DAE/OBJ/MTL/eye-texture files are retained, while the renderer additionally
-uses generated segment and skin files documented in `MODIFICATIONS.md` and
-`FILES_COPIED.md`. Those generated files are visualization transformations;
-they do not enter the dynamics or measurement model.
+`@hamill_knutzen_derrick_2015` and `@zatsiorsky_kinetics_2002` informed the
+interpretation of force-platform signals, external/internal force, bilateral
+force, impulse, and COM-related mechanics. `@komi_2003` informed
+literature-aware plausibility checks for CMJ/SSC/landing mechanics.
 
-The official MakeHuman Community license page identifies the core/exported
-asset pathway as CC0, so attribution is not a legal condition for this
-pathway. The official asset-pack catalog distinguishes CC0 packs from CC-BY
-packs; it must not be read as a blanket license for every MakeHuman-community
-asset. The inventory above contains an owner-exported core body and eye
-texture, not a downloaded community asset pack. Any future addition must be
-checked against its individual pack notice.
+The reported validation is still internal and synthetic: deterministic
+mechanics validation, numerical validation, replay/determinism validation, and
+held-out same-plant validation. It is not experimental human validation,
+clinical validation, population inference, or subject-specific validation.
 
-The project nevertheless cites the source because this is a research artifact.
-Use both the software/asset acknowledgment and the modelling-framework
-publication:
+## NUMERICAL/ENGINEERING DESIGN CHOICES
 
-> MakeHuman Community. *MakeHuman Community*. Official project and asset
-> documentation. <https://static.makehumancommunity.org/about/license.html>
-> Asset-pack catalog: <https://static.makehumancommunity.org/assets/assetpacks/index.html>
+The release deliberately exposes, rather than disguises, its unreferenced
+choices. They include:
 
-> Briceno, L.; Paul, G. (2019). *MakeHuman: A Review of the Modelling
-> Framework*. Advances in Intelligent Systems and Computing, 822, 224–232.
-> <https://doi.org/10.1007/978-3-319-96077-7_23>
+- morphology, topology, geometry, COM/inertia layout, mass scaling, and joint
+  ranges;
+- the loaded-CMJ phase schedule, countermovement depth, braking/propulsion
+  sequencing, takeoff/landing/recovery rules, and fixed 20 kg condition;
+- six torque actuators, PD/feed-forward control, stiffness/damping, activation
+  delay and time constants;
+- foot-contact geometry, friction, soft-contact settings, thresholds, and
+  force aggregation;
+- compliant rack, bar/hand coupling, attachment geometry, and bar displacement;
+- force scale/bias, synthetic noise, 100 Hz comparison grid, filtering, delay,
+  finite differences, offsets, and time alignment;
+- the 27-scalar identification structure, bounds, residual composition, and
+  six-identification/32-validation synthetic split;
+- the 0.002 s timestep, solver/integrator settings, settling procedure, seeds,
+  and synthetic distributions.
 
-The machine-local export path records `v1py3`, but the exact MakeHuman release
-was not captured in the exported metadata. This repository deliberately does
-not invent a version number. The structured BibTeX records are in
-[`docs/references.bib`](references.bib).
+The bilateral `alpha=0.02` is a known trial-layer excitation. It was selected as
+the smallest mechanically valid value in the tested synthetic panel and is a
+`VALIDATION_CONSTRAINED_CHOICE`/`SYNTHETIC_DATA_DESIGN`, not a normative,
+clinical, pathological, dominant-limb, injury-risk, or physiological
+threshold. The fixed 20 kg load is the experiment condition chosen by this
+project, not a literature-derived recommended load.
+
+The full 51-item inventory and classifications are maintained in
+[`docs/reference_map.md`](reference_map.md). All public quantities retain SI
+units. Synthetic noise defines deterministic realizations; it is not an
+empirical instrument-uncertainty estimate, confidence interval, or population
+error bar.
+
+## SOFTWARE DEPENDENCIES
+
+The materially used software references are:
+
+- `@todorov_erez_tassa_2012` for MuJoCo, including the actual `mj_step` and
+  `mj_contactForce` dependency;
+- `@harris_numpy_2020` for NumPy array operations;
+- `@virtanen_scipy_2020` for the direct `scipy.optimize.least_squares` use in
+  `src/loaded_cmj/identification.py`;
+- `@hunter_matplotlib_2007` for the checked-in scientific plot and media
+  tooling.
+
+The official MuJoCo documentation is a runtime documentation URL, not a second
+model-provenance source. Transitive packages and test utilities are not given
+separate scientific citations.
+
+## ASSET PROVENANCE
+
+The MakeHuman visual family is a separate, render-only asset chain. Its tracked
+records are:
+
+- `assets/makehuman_cmj_visual/PROVENANCE.md`;
+- `assets/makehuman_cmj_visual/LICENSE_CC0.txt`;
+- `assets/makehuman_cmj_visual/MODIFICATIONS.md`; and
+- `assets/makehuman_cmj_visual/FILES_COPIED.md`.
+
+The renderer loads and poses this visual family from live plant landmarks; it
+does not step it and it has no effect on plant contacts, masses, inertias, COM,
+CoP, GRF, LPT signals, data, or scoring. `@makehuman_community_2026` is the
+software/asset citation. `@briceno_paul_2019` is general MakeHuman framework
+background and asset acknowledgment only. The exact local MakeHuman
+application release was not recorded, so no version is invented.
+
+The repository ships the asset notices and citation metadata only. Scientific
+literature is citation-only: no article or book PDFs, copied figures, copied
+tables, substantial quotations, or copied copyrighted pseudocode are included.

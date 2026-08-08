@@ -5,6 +5,12 @@ Its public channel names, units, and transformations are defined by
 `src/loaded_cmj/plant.py`, `src/loaded_cmj/measurements.py`, and
 `configs/preprocessing.json`.
 
+The interpretation of force-platform signals, external/internal force, and
+impulse is literature-informed by `@hamill_knutzen_derrick_2015` and
+`@zatsiorsky_kinetics_2002`. The sampled-motion terminology is informed by
+`@zatsiorsky_kinematics_1998`; all channel transforms and constants below are
+first-party implementation choices.
+
 ## Force-platform channels
 
 | Channel | Unit | Meaning |

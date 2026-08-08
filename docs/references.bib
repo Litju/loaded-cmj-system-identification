@@ -1,53 +1,242 @@
-@misc{MuJoCoDocumentation,
-  author       = {{DeepMind MuJoCo Contributors}},
-  title        = {MuJoCo Documentation},
-  howpublished = {Online software documentation},
-  year         = {2026},
-  url          = {https://mujoco.readthedocs.io/},
-  note         = {Software documentation used for model compilation, contact mechanics, integration, and rendering; accessed 2026-08-08}
+% Citation-only bibliography for the fixed-20-kg Loaded CMJ system.
+% No entry below is a quantitative source for the plant morphology, masses,
+% inertias, contact constants, actuator constants, sensor imperfections, or
+% fitted bounds. See docs/reference_map.md for the evidence boundary.
+
+@book{nocedal_wright_2006,
+  author    = {Nocedal, Jorge and Wright, Stephen J.},
+  title     = {Numerical Optimization},
+  edition   = {2},
+  year      = {2006},
+  publisher = {Springer},
+  address   = {New York, NY},
+  series    = {Springer Series in Operations Research and Financial Engineering},
+  isbn      = {978-0-387-30303-1},
+  doi       = {10.1007/978-0-387-40065-5},
+  url       = {https://link.springer.com/book/10.1007/978-0-387-40065-5},
+  note      = {Role: METHODS_BACKGROUND}
 }
 
-@misc{MakeHumanCommunity,
-  author       = {{MakeHuman Community}},
-  title        = {MakeHuman Community: Project, Asset, and License Documentation},
-  howpublished = {\url{https://www.makehumancommunity.org/}},
-  year         = {2026},
-  note         = {Official project, core-asset license, and asset-pack documentation: https://static.makehumancommunity.org/about/license.html and https://static.makehumancommunity.org/assets/assetpacks/index.html; BibTeX year records access/update year, not an asserted original publication year; accessed 2026-08-08}
+@book{lynch_park_2017,
+  author    = {Lynch, Kevin M. and Park, Frank C.},
+  title     = {Modern Robotics: Mechanics, Planning, and Control},
+  year      = {2017},
+  publisher = {Cambridge University Press},
+  isbn      = {978-1-107-15630-2},
+  doi       = {10.1017/9781316661239},
+  url       = {https://www.cambridge.org/core/books/modern-robotics/57C3BB1C6D5CB40320FA96E5FA3BCEC6},
+  note      = {Role: METHODS_BACKGROUND}
 }
 
-@inproceedings{TodorovErezTassa2012MuJoCo,
+@misc{tedrake_underactuated_2024,
+  author       = {Tedrake, Russ},
+  title        = {Underactuated Robotics: Algorithms for Walking, Running, Swimming, Flying, and Manipulation},
+  year         = {2024},
+  howpublished = {MIT 6.832 course notes},
+  url          = {https://underactuated.csail.mit.edu/},
+  note         = {Official course notes; accessed 2026-08-08; Role: METHODS_BACKGROUND}
+}
+
+@book{featherstone_2008,
+  author    = {Featherstone, Roy},
+  title     = {Rigid Body Dynamics Algorithms},
+  edition   = {1},
+  year      = {2008},
+  publisher = {Springer},
+  address   = {New York, NY},
+  isbn      = {978-0-387-74314-1},
+  doi       = {10.1007/978-1-4899-7560-7},
+  url       = {https://link.springer.com/book/10.1007/978-1-4899-7560-7},
+  note      = {Role: METHODS_BACKGROUND}
+}
+
+@book{shabana_2010,
+  author    = {Shabana, Ahmed A.},
+  title     = {Computational Dynamics},
+  edition   = {3},
+  year      = {2010},
+  publisher = {John Wiley and Sons},
+  isbn      = {978-0-470-68615-7},
+  doi       = {10.1002/9780470686850},
+  url       = {https://doi.org/10.1002/9780470686850},
+  note      = {Third edition; first published 2009, copyright 2010; Role: METHODS_BACKGROUND}
+}
+
+@book{hamill_knutzen_derrick_2015,
+  author    = {Hamill, Joseph and Knutzen, Kathleen M. and Derrick, Timothy R.},
+  title     = {Biomechanical Basis of Human Movement},
+  edition   = {4},
+  year      = {2015},
+  publisher = {Wolters Kluwer},
+  isbn      = {978-1-4511-7730-5},
+  note      = {Role: MEASUREMENT_METHOD_SOURCE}
+}
+
+@book{zatsiorsky_kinematics_1998,
+  author    = {Zatsiorsky, Vladimir M.},
+  title     = {Kinematics of Human Motion},
+  year      = {1998},
+  publisher = {Human Kinetics},
+  address   = {Champaign, IL},
+  isbn      = {978-0-88011-676-3},
+  note      = {Role: METHODS_BACKGROUND}
+}
+
+@book{zatsiorsky_kinetics_2002,
+  author    = {Zatsiorsky, Vladimir M.},
+  title     = {Kinetics of Human Motion},
+  year      = {2002},
+  publisher = {Human Kinetics},
+  address   = {Champaign, IL},
+  isbn      = {978-0-7360-3778-5},
+  note      = {Role: MEASUREMENT_METHOD_SOURCE}
+}
+
+@book{komi_2003,
+  editor    = {Komi, Paavo V.},
+  title     = {Strength and Power in Sport},
+  edition   = {2},
+  year      = {2003},
+  publisher = {Blackwell Science},
+  isbn      = {978-0-632-05911-9},
+  doi       = {10.1002/9780470757215},
+  url       = {https://doi.org/10.1002/9780470757215},
+  note      = {Role: VALIDATION_SOURCE}
+}
+
+@book{khalil_2002,
+  author    = {Khalil, Hassan K.},
+  title     = {Nonlinear Systems},
+  edition   = {3},
+  year      = {2002},
+  publisher = {Prentice Hall},
+  isbn      = {0-13-067389-7},
+  url       = {https://www.egr.msu.edu/~khalil/NonlinearSystems/index.html},
+  note      = {Role: METHODS_BACKGROUND}
+}
+
+@book{astrom_murray_2008,
+  author    = {{\AA}str{\"o}m, Karl J. and Murray, Richard M.},
+  title     = {Feedback Systems: An Introduction for Scientists and Engineers},
+  year      = {2008},
+  publisher = {Princeton University Press},
+  isbn      = {978-0-691-13576-2},
+  url       = {https://authors.library.caltech.edu/records/yzs24-xsx88},
+  note      = {Open author-hosted edition; Role: METHODS_BACKGROUND}
+}
+
+@book{sarkka_svensson_2023,
+  author    = {S{\"a}rkk{\"a}, Simo and Svensson, Lennart},
+  title     = {Bayesian Filtering and Smoothing},
+  edition   = {2},
+  year      = {2023},
+  publisher = {Cambridge University Press},
+  isbn      = {978-1-108-92664-5},
+  doi       = {10.1017/9781108917407},
+  url       = {https://www.cambridge.org/core/books/bayesian-filtering-and-smoothing/F88740E8D25010CF3119A5CA379FA37A},
+  note      = {Role: METHODS_BACKGROUND}
+}
+
+@book{ljung_1999,
+  author    = {Ljung, Lennart},
+  title     = {System Identification: Theory for the User},
+  edition   = {2},
+  year      = {1999},
+  publisher = {Prentice Hall PTR},
+  address   = {Upper Saddle River, NJ},
+  isbn      = {0-13-656695-2},
+  url       = {https://rt.isy.liu.se/en/books/sysid/},
+  note      = {Role: METHODS_BACKGROUND}
+}
+
+@incollection{beck_1979,
+  author    = {Beck, M. B.},
+  title     = {Model Structure Identification from Experimental Data},
+  booktitle = {Theoretical Systems Ecology: Advances and Case Studies},
+  editor    = {Halfon, E.},
+  year      = {1979},
+  publisher = {Academic Press},
+  address   = {London},
+  pages     = {259--289},
+  url       = {https://pure.iiasa.ac.at/id/eprint/1046/},
+  note      = {Reprinted as IIASA Research Report RR-80-004 in 1980; Role: METHODS_BACKGROUND}
+}
+
+@book{brogliato_1996,
+  author    = {Brogliato, Bernard},
+  title     = {Nonsmooth Impact Mechanics: Models, Dynamics and Control},
+  series    = {Lecture Notes in Control and Information Sciences},
+  volume    = {220},
+  edition   = {1},
+  year      = {1996},
+  publisher = {Springer},
+  isbn      = {978-3-540-70681-6},
+  doi       = {10.1007/BFb0027733},
+  url       = {https://link.springer.com/book/10.1007/BFb0027733},
+  note      = {Role: METHODS_BACKGROUND}
+}
+
+@inproceedings{todorov_erez_tassa_2012,
   author    = {Todorov, Emanuel and Erez, Tom and Tassa, Yuval},
   title     = {MuJoCo: A Physics Engine for Model-Based Control},
   booktitle = {2012 IEEE/RSJ International Conference on Intelligent Robots and Systems},
   year      = {2012},
+  publisher = {IEEE},
   pages     = {5026--5033},
   doi       = {10.1109/IROS.2012.6386109},
-  note      = {Software reference for the MuJoCo plant and renderer}
+  url       = {https://doi.org/10.1109/IROS.2012.6386109},
+  note      = {Role: SOFTWARE_ASSET_REFERENCE}
 }
 
-@article{HarrisEtAl2020NumPy,
-  author  = {Harris, Charles R. and others},
+@article{harris_numpy_2020,
+  author  = {Harris, Charles R. and Millman, K. Jarrod and van der Walt, St{\'e}fan J. and Gommers, Ralf and Virtanen, Pauli and Cournapeau, David and Wieser, Eric and Taylor, Julian and Berg, Sebastian and Smith, Nathaniel J. and Kern, Robert and Picus, Matti and Hoyer, Stephan and van Kerkwijk, Marten H. and Brett, Matthew and Haldane, Allan and del R{\'i}o, Jaime Fern{\'a}ndez and Wiebe, Mark and Peterson, Pearu and G{\'e}rard-Marchant, Pierre and Sheppard, Kevin and Reddy, Tyler and Weckesser, Warren and Abbasi, Hameer and Gohlke, Christoph and Oliphant, Travis E.},
   title   = {Array Programming with NumPy},
   journal = {Nature},
   year    = {2020},
   volume  = {585},
+  number  = {7825},
   pages   = {357--362},
   doi     = {10.1038/s41586-020-2649-2},
-  note    = {Numerical-array software reference}
+  url     = {https://doi.org/10.1038/s41586-020-2649-2},
+  note    = {Role: SOFTWARE_ASSET_REFERENCE}
 }
 
-@article{VirtanenEtAl2020SciPy,
-  author  = {Virtanen, Pauli and others},
+@article{virtanen_scipy_2020,
+  author  = {Virtanen, Pauli and Gommers, Ralf and Oliphant, Travis E. and Haberland, Matt and Reddy, Tyler and Cournapeau, David and Burovski, Evgeni and Peterson, Pearu and Weckesser, Warren and Bright, Jonathan and van der Walt, St{\'e}fan J. and Brett, Matthew and Wilson, Joshua and Millman, K. Jarrod and Mayorov, Nikolay and Nelson, Andrew R. J. and Jones, Eric and Kern, Robert and Larson, Eric and Carey, C. J. and Polat, {\.{I}}lhan and Feng, Yu and Moore, Eric W. and VanderPlas, Jake and Laxalde, Denis and Perktold, Josef and Cimrman, Robert and Henriksen, Ian and Quintero, E. A. and Harris, Charles R. and Archibald, Anne M. and Ribeiro, Ant{\'o}nio H. and Pedregosa, Fabian and van Mulbregt, Paul and {SciPy 1.0 Contributors}},
   title   = {SciPy 1.0: Fundamental Algorithms for Scientific Computing in Python},
   journal = {Nature Methods},
   year    = {2020},
   volume  = {17},
+  number  = {3},
   pages   = {261--272},
   doi     = {10.1038/s41592-019-0686-2},
-  note    = {Bounded least-squares optimization software reference}
+  url     = {https://doi.org/10.1038/s41592-019-0686-2},
+  note    = {Role: SOFTWARE_ASSET_REFERENCE}
 }
 
-@incollection{BricenoPaul2019MakeHuman,
+@article{hunter_matplotlib_2007,
+  author  = {Hunter, John D.},
+  title   = {Matplotlib: A 2D Graphics Environment},
+  journal = {Computing in Science \& Engineering},
+  year    = {2007},
+  volume  = {9},
+  number  = {3},
+  pages   = {90--95},
+  doi     = {10.1109/MCSE.2007.55},
+  url     = {https://doi.org/10.1109/MCSE.2007.55},
+  note    = {Plot-generation dependency in the development/media surface; Role: SOFTWARE_ASSET_REFERENCE}
+}
+
+@misc{makehuman_community_2026,
+  author       = {{MakeHuman Community}},
+  title        = {MakeHuman Community: Project, Asset, and License Documentation},
+  year         = {2026},
+  howpublished = {Official project and licensing documentation},
+  url          = {https://static.makehumancommunity.org/about/license.html},
+  note         = {Accessed 2026-08-08; asset-pack catalog: https://static.makehumancommunity.org/assets/assetpacks/index.html; access year is not an asserted publication year; Role: SOFTWARE_ASSET_REFERENCE}
+}
+
+@incollection{briceno_paul_2019,
   author    = {Briceno, Leyde and Paul, Gunther},
   title     = {MakeHuman: A Review of the Modelling Framework},
   booktitle = {Proceedings of the 20th Congress of the International Ergonomics Association (IEA 2018)},
@@ -59,5 +248,6 @@
   address   = {Cham},
   year      = {2019},
   doi       = {10.1007/978-3-319-96077-7_23},
-  url       = {https://doi.org/10.1007/978-3-319-96077-7_23}
+  url       = {https://doi.org/10.1007/978-3-319-96077-7_23},
+  note      = {Role: GENERAL_BACKGROUND; MakeHuman visual-asset acknowledgment only}
 }

@@ -7,6 +7,11 @@ displacement observations, with summary and event-derived residual diagnostics.
 Every residual evaluation re-runs the source full-morphology MuJoCo plant; no
 trajectory is replayed from the observations.
 
+The general model-structure, experiment-design, residual, and identifiability
+framing is literature-informed by `@ljung_1999`, `@beck_1979`, and
+`@nocedal_wright_2006`. The current 27-coordinate schema, bounds, residual
+weights, and deterministic optimizer settings are first-party choices.
+
 ## Parameter authority
 
 The canonical authority is `configs/param_schema.json`. It defines the full

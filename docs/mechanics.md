@@ -15,6 +15,10 @@ forces are reconstructed from `mujoco.mj_contactForce`, rotated into world
 coordinates, and aggregated with the source force-platform sign/magnitude
 semantics for bilateral vertical force telemetry.
 
+Rigid-body, wrench, and contact-frame interpretation is literature-informed by
+`@featherstone_2008`, `@shabana_2010`, and `@lynch_park_2017`; the compiled MJCF
+and all numerical values remain first-party model authority.
+
 The public experiment uses a fixed `external_load_kg = 20.0`. The public
 synthetic reference configuration uses `body_mass_kg = 78.37 kg`; the 75 kg
 value retained in the plant source is the committed morphology's mass-scaling

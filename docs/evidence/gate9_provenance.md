@@ -1,67 +1,71 @@
 # Gate 9 provenance and citation audit
 
-Both required evidence bundles were inspected in temporary directories only;
-neither ZIP is tracked or copied into this repository.
+Both owner-supplied evidence bundles were inspected in temporary directories
+only. Neither ZIP, raw literature PDF, or private evidence report is tracked or
+copied into the public repository.
 
-| Bundle | SHA-256 | Checksum result |
-| --- | --- | :---: |
-| `loaded_cmj_scientific_provenance_evidence_bundle.zip` | `f3a4c91b211cdb002c0f1900bf949f83f3c2d53afd2396e28fa764de18e2499c` | top-level manifest valid |
-| `LOADED_CMJ_SCIENTIFIC_PROVENANCE_EVIDENCE_BUNDLE_20260808.zip` | `9701c0a70b19216204daf50fa41a2cb6e49899c6df43affe1510bbab8906e535` | top-level manifest valid |
+| Bundle | SHA-256 | Inventory | Checksum result |
+| --- | --- | ---: | :---: |
+| `loaded_cmj_scientific_provenance_evidence_bundle.zip` | `f3a4c91b211cdb002c0f1900bf949f83f3c2d53afd2396e28fa764de18e2499c` | 17 files | top-level manifest valid |
+| `LOADED_CMJ_SCIENTIFIC_PROVENANCE_EVIDENCE_BUNDLE_20260808.zip` | `9701c0a70b19216204daf50fa41a2cb6e49899c6df43affe1510bbab8906e535` | 64 files | top-level manifest valid |
 
-The newer 20260808 reconstruction receives greater evidentiary weight. Its
-top-level `SHA256SUMS.txt` validated all 64 included payloads. Three nested
-protocol manifests also validated. The nested RCCP-A manifest references
-checkpoint/diagnostic/raw payloads intentionally absent from the archive, so it
-is not a self-contained manifest; this is recorded as a partial nested-manifest
-limitation, not a top-level bundle failure.
+The newer archive's `SHA256SUMS.txt` validated its 63 payload checksum lines;
+the 64th archive member is the checksum file itself. Its RCCP-A protocol
+sidecar and the RD1 checkpoint/protocol sidecars also validate. The nested
+`RCCP_A_SHA256SUMS.txt` ledger is not self-contained: 33 listed checkpoint,
+diagnostic, and raw payloads are intentionally absent from the archive. That
+partial nested-ledger limitation is recorded rather than silently treated as a
+successful full archive validation.
 
 ## Reconciliation against primary evidence
 
-Primary project evidence and the live target Git history override stale bundle
-metadata. The target execution began at
-`891d987021750f6b6d2a97c0e55b0f2be0548e0c` on
-`release/20kg-sysid-v0.1.0`; the source authority was inspected at
-`470d1666ce37407b8898c374170921e5d47cc5ff`. The bundle's older recorded target
-HEAD and its historical reduced-dimension descriptions were not used to make
-physical-model decisions. The current target authority is the compiled
-`nq=21`, `nv=21`, `nu=6` plant, 27-scalar parameter schema, 78.37 kg synthetic
-reference body mass, and six/32 fixed-load datasets.
+The frozen target is the current committed release at
+`2e469217777f4150b834c03ab5f4a46f9892366b`, with the 21-DOF compiled plant
+contract (`nq=21`, `nv=21`, `nu=6`) and the 27-scalar schema protected by the
+tracked integrity tests. A stale 24-parameter statement in the newer
+reconstruction was corrected from the committed schema. The current target
+directly imports `scipy.optimize.least_squares`, resolving the newer bundle's
+request for local confirmation of SciPy use.
 
-The newer bundle also asks for a local confirmation of SciPy use. The target
-code directly imports `scipy.optimize.least_squares`, so SciPy is classified as
-an actually used software dependency here. No numerical plant parameter was
-copied from SciPy, MuJoCo, or any biomechanics source.
+The older bundle's conservative bibliography retained only MuJoCo, NumPy, and
+two split MakeHuman entries. The newer bundle contains explicit source-binding
+records for the methods, measurement, and validation references. Primary
+committed evidence supports retaining those references as methods/measurement/
+validation provenance, while still rejecting them as parameter sources. The
+two MakeHuman entries are consolidated into one software/asset reference.
 
-## Reference-role classification
+The newer bundle's Featherstone DOI was corrected from
+`10.1007/978-0-387-74315-8` (the publisher record for a different book) to
+`10.1007/978-1-4899-7560-7`. The newer ledger's software entries were
+reclassified as `SOFTWARE_ASSET_REFERENCE`; its MakeHuman entry was separated
+from the general-background MakeHuman review. The RL/task-authoring-only
+reference was excluded from the public bibliography. Matplotlib was retained
+from the primary target because the checked-in publication tooling imports it.
 
-This table separates the role assigned by the evidence audit from the stronger
-claim that a source supplied a model parameter. The target repository has no
-external `DIRECT_MODEL_BASIS` or `PARAMETER_SOURCE`; morphology, numerical
-values, actuator semantics, contact settings, sensor imperfections, bounds,
-seeds, event thresholds, and the selected alpha are first-party synthetic
-engineering decisions.
+## Final role boundary
 
-| Reference group | Role | Target-release disposition |
-| --- | --- | --- |
-| Target MJCF, direct plant port, and primary source history | `DIRECT_MODEL_BASIS` | Actual model authority; not a literature citation |
-| Target parameter schema/configurations and generator | `PARAMETER_SOURCE` | First-party synthetic parameter source; no external numerical source claimed |
-| Hamill, Knutzen & Derrick; Zatsiorsky, *Kinetics of Human Motion* | `MEASUREMENT_METHOD_SOURCE` in the newer bundle | Methodological interpretation in the audit bundle; not used to set target numerical values and not added to the target bibliography without a target-source binding |
-| Komi, *Strength and Power in Sport* | `VALIDATION_SOURCE` in the newer bundle | Validation background in the audit bundle; not a source of plant parameters |
-| Sutton & Barto; Nocedal & Wright; Lynch & Park; Tedrake; Featherstone; Shabana; Zatsiorsky, *Kinematics*; Khalil; Åström & Murray; Särkkä & Svensson; Ljung; Beck; Brogliato | `METHODS_BACKGROUND` in the newer bundle | Evidence for later verification doctrine; not a numerical model basis |
-| Todorov, Erez & Tassa; NumPy; SciPy; MuJoCo documentation | `SOFTWARE_ASSET_REFERENCE` | Actually used software/documentation; cited in `docs/references.bib` |
-| MakeHuman Community documentation | `SOFTWARE_ASSET_REFERENCE` | Render-only reused asset and license provenance; no physics effect |
-| Briceno & Paul (2019) | `GENERAL_BACKGROUND` | MakeHuman framework background only; no model-parameter provenance |
-| References present only as unbound candidates in the older bundle or source library | `NOT_ACTUALLY_USED` | Not added to the target bibliography |
+The committed MJCF/plant/schema are first-party `DIRECT_MODEL_BASIS` and
+first-party parameter authority. No external literature source is retained as
+`DIRECT_MODEL_BASIS` or `PARAMETER_SOURCE`. The final public bibliography is
+the citation-only set documented in [`docs/reference_map.md`](../reference_map.md):
 
-The target bibliography therefore contains only sources with an evidenced
-release role: MuJoCo, NumPy, SciPy, MakeHuman documentation, and the MakeHuman
-framework paper. The first-party assumption boundary is retained explicitly in
-`docs/provenance.md` and the asset license/provenance files.
+- measurement methods: Hamill/Knutzen/Derrick and Zatsiorsky, *Kinetics*;
+- validation: Komi, *Strength and Power in Sport*;
+- methods background: rigid-body/contact, numerical, stability, sampled-data,
+  and system-identification references;
+- software/assets: MuJoCo, NumPy, SciPy, Matplotlib, and MakeHuman;
+- general background: Briceno and Paul's MakeHuman review.
 
-## Asset and repository licensing
+No source supplies the target's morphology, masses, inertias, contact or
+actuator constants, sensor calibration/noise, event thresholds, parameter
+bounds, fixed 20 kg condition, or `alpha=0.02`. Those choices are explicitly
+classified in the public provenance and reference-map documents. `alpha=0.02`
+is the smallest mechanically valid tested synthetic excitation, not a
+physiological or clinical threshold.
 
-The repository code and documentation are Apache-2.0 under `LICENSE` and the
-current `CITATION.cff`. The MakeHuman visual family is retained separately with
-its CC0 notice, copied-file inventory, modification record, and render-only
-boundary. The owner-exported asset's exact application release was not captured;
-the local `v1py3` path is not promoted to a version claim.
+## Copyright and license boundary
+
+Scientific literature remains citation-only. The repository contains no
+third-party paper or book PDFs, copied figures, copied tables, substantial
+quotes, or copied copyrighted pseudocode. The MakeHuman visual asset remains a
+separate tracked asset/license chain under `assets/makehuman_cmj_visual/`.

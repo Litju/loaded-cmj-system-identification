@@ -10,6 +10,11 @@ in the dataset manifest. The modeled athlete is a synthetic rigid-body
 multibody abstraction; it is not a muscle-level physiological model or a
 subject-specific digital twin.
 
+The separation between the plant, controller, and sampled measurement route is
+methodologically informed by `@astrom_murray_2008`, `@sarkka_svensson_2023`,
+and `@featherstone_2008`; those sources do not provide the numerical plant
+parameters.
+
 The two nominal conditions have identical mechanics and distinct declared
 measurement/noise seeds. The bilateral condition applies a balanced,
 experiment-layer drive scaling with the smallest qualified alpha and reports
@@ -49,6 +54,9 @@ The native trace and comparison observation are different representations of
 the same trial. Resampling does not alter the plant state or replace the
 measurement model.
 
+Force-platform and impulse terminology follows the measurement-method boundary
+recorded in `@hamill_knutzen_derrick_2015` and `@zatsiorsky_kinetics_2002`.
+
 ## Units and uncertainty
 
 The public signal surface uses SI units: force in N, displacement in m,
@@ -78,6 +86,11 @@ parameter coordinates
     -> unit-balanced trace and summary residuals
     -> bounded nonlinear least-squares update
 ```
+
+The experiment-design, model-structure, and bounded-optimization framing is
+literature-informed (`@ljung_1999`, `@beck_1979`, and
+`@nocedal_wright_2006`). The 27 coordinates, bounds, residual scales, and
+optimizer budget remain first-party choices.
 
 Force residuals are scaled by the observed quiet baseline and bar-displacement
 residuals by the declared 0.1 m fitting scale; event/summary residuals use the

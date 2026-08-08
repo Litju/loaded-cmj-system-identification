@@ -9,14 +9,19 @@
 Loaded CMJ System Identification in MuJoCo is a deterministic,
 mechanics-first system-identification study of a modeled loaded countermovement
 jump under a fixed 20 kg external load, using bilateral force-platform
-measurements and bar/LPT kinematics. It couples the full-fidelity linked
-sagittal human model, externally loaded bar, bilateral force plates, and
+measurements and bar/LPT kinematics. It couples the source-authoritative linked
+sagittal rigid-body model, externally loaded bar, bilateral force plates, and
 bar-mounted linear-position transducer (LPT) measurement model in MuJoCo.
 
 The source XML and plant implementation are retained as the scientific
 authority. The public modules provide ordinary parameter loading, simulation,
 measurement preprocessing, bounded fitting, validation, dataset generation, and
 rendering entry points around that plant.
+
+No external publication is presented as the numerical source of the plant or
+its parameters. The public citation-to-code boundary is maintained in the
+[`reference map`](docs/reference_map.md), with the citation-only bibliography
+in [`docs/references.bib`](docs/references.bib).
 
 ## Media suite
 
@@ -28,7 +33,7 @@ machine-readable index is [`media/MANIFEST.json`](media/MANIFEST.json).
 [![Nominal A preview](media/20kg_nominal_a/preview.png)](media/20kg_nominal_a/render.mp4)
 
 Nominal A is the representative hero because it shows the fixed-load experiment
-without emphasizing a perturbation. The same full-fidelity renderer and native-
+without emphasizing a perturbation. The same production renderer and native-
 unit analysis are available for every qualified condition:
 
 | Scenario | Condition | Media bundle |
@@ -182,6 +187,8 @@ The most useful starting points are:
   source-equivalence qualification;
 - [`docs/provenance.md`](docs/provenance.md): direct-port and visual-asset
   provenance;
+- [`docs/reference_map.md`](docs/reference_map.md): citation roles and
+  implementation traceability;
 - [`docs/release-checklist.md`](docs/release-checklist.md): owner actions needed
   once a hosted repository exists.
 
@@ -218,13 +225,12 @@ metadata and add those identifiers only when they are real; see
 
 ## References
 
-- MuJoCo documentation: <https://mujoco.readthedocs.io/>
-- MakeHuman community licensing information:
-  <https://static.makehumancommunity.org/about/license.html>
-- MakeHuman Community asset-pack catalog:
-  <https://static.makehumancommunity.org/assets/assetpacks/index.html>
-- MakeHuman Community, official project and asset documentation:
-  <https://www.makehumancommunity.org/>
-- Briceno, L.; Paul, G. (2019), “MakeHuman: A Review of the Modelling
-  Framework,” *Advances in Intelligent Systems and Computing*, 822, 224–232:
-  <https://doi.org/10.1007/978-3-319-96077-7_23>
+The complete citation-only bibliography, role classifications, implementation
+locations, and evidence boundary are in
+[`docs/reference_map.md`](docs/reference_map.md) and
+[`docs/references.bib`](docs/references.bib). The canonical software and asset
+acknowledgments are MuJoCo ([Todorov et al.](https://doi.org/10.1109/IROS.2012.6386109)),
+NumPy ([Harris et al.](https://doi.org/10.1038/s41586-020-2649-2)), SciPy
+([Virtanen et al.](https://doi.org/10.1038/s41592-019-0686-2)), Matplotlib
+([Hunter](https://doi.org/10.1109/MCSE.2007.55)), and the [MakeHuman Community
+license guidance](https://static.makehumancommunity.org/about/license.html).
