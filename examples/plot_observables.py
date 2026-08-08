@@ -303,48 +303,85 @@ def _combined_measurements(result: dict[str, Any], observed: dict[str, Any]) -> 
 
 
 def _combined_grf_com_lpt(result: dict[str, Any], observed: dict[str, Any]) -> None:
-    """One aligned figure combining GRFs, COM-z, and both LPT channels."""
+    """One plotting axes combining GRFs, COM-z, and both LPT channels."""
 
     time_s, traces = _time_values(result)
     observed_time = [float(value) for value in observed["time_s"]]
-    fig, axes = plt.subplots(4, 1, figsize=(13, 11.5), sharex=True, constrained_layout=True)
-    fig.suptitle(
-        "Loaded CMJ — GRFs, COM displacement, and LPT channels",
+    fig, host = plt.subplots(1, 1, figsize=(16, 8), constrained_layout=False)
+    figure_title = "Loaded CMJ — GRFs, COM displacement, and LPT channels (single axes)"
+
+    # Four native-unit y-scales share one physical plotting rectangle.  A
+    # single y-scale would compress the metre and m/s channels beneath the
+    # several-kilonewton GRF, while normalization would change the displayed
+    # semantics.  Multiple y-axes preserve the original values exactly.
+    com_axis = host.twinx()
+    velocity_axis = host.twinx()
+    displacement_axis = host.twinx()
+    for axis in (com_axis, velocity_axis, displacement_axis):
+        axis.patch.set_visible(False)
+        axis.grid(False)
+        axis.spines["top"].set_visible(False)
+        axis.spines["left"].set_visible(False)
+    velocity_axis.spines["right"].set_position(("outward", 62))
+    displacement_axis.spines["right"].set_position(("outward", 124))
+
+    _prepare_axis(host, result, labels=True)
+    _plot_mujoco(host, time_s, traces["fz_left_N"], "MuJoCo left GRF", linestyle="--", alpha=0.72)
+    _plot_mujoco(host, time_s, traces["fz_right_N"], "MuJoCo right GRF", linestyle=":", alpha=0.72)
+    _plot_mujoco(host, time_s, traces["fz_total_N"], "MuJoCo total GRF")
+    _plot_observed(host, observed_time, observed["fz_total_N"], "observed total GRF")
+    _style_axis(host, "Force-platform GRFs + COM + LPT (native scales)", "GRF (N)")
+
+    _plot_mujoco(com_axis, time_s, traces["com_z_m"], "MuJoCo COM z")
+    _plot_mujoco(velocity_axis, time_s, traces["bar_velocity_m_s"], "MuJoCo LPT/bar velocity")
+    _plot_observed(velocity_axis, observed_time, observed["bar_velocity_m_s"], "observed LPT/bar velocity")
+    _plot_mujoco(displacement_axis, time_s, traces["bar_displacement_m"], "MuJoCo LPT/bar displacement")
+    _plot_observed(displacement_axis, observed_time, observed["bar_displacement_m"], "observed LPT/bar displacement")
+
+    for axis, label, color in (
+        (host, "GRF (N)", TEXT),
+        (com_axis, "COM z (m)", MUJOCO),
+        (velocity_axis, "LPT velocity (m/s)", OBSERVED),
+        (displacement_axis, "LPT displacement (m)", OBSERVED),
+    ):
+        axis.set_ylabel(label, color=color)
+        axis.tick_params(axis="y", colors=color, labelsize=8)
+        axis.spines["right"].set_color(color) if axis is not host else axis.spines["left"].set_color(color)
+        axis.spines["right"].set_linewidth(0.8) if axis is not host else axis.spines["left"].set_linewidth(0.8)
+    host.set_xlabel("time (s)", color=TEXT)
+    host.set_xlim(time_s[0], time_s[-1])
+
+    all_handles = []
+    all_labels = []
+    for axis in (host, com_axis, velocity_axis, displacement_axis):
+        handles, labels = axis.get_legend_handles_labels()
+        all_handles.extend(handles)
+        all_labels.extend(labels)
+    legend = host.legend(
+        all_handles,
+        all_labels,
+        loc="upper center",
+        bbox_to_anchor=(0.50, 1.16),
+        ncol=4,
+        frameon=True,
+        facecolor=BACKGROUND,
+        edgecolor=GRID,
+        framealpha=0.92,
+        borderpad=0.45,
+    )
+    for label in legend.get_texts():
+        label.set_color(TEXT)
+    fig.subplots_adjust(left=0.08, right=0.78, bottom=0.12, top=0.78)
+    fig.text(
+        0.50,
+        0.975,
+        figure_title,
         color=TEXT,
         fontsize=14,
         fontweight="bold",
+        ha="center",
+        va="top",
     )
-
-    # The panels share one time axis but retain their native units.  This keeps
-    # the requested signals in one figure without inventing a normalization or
-    # a second axis with misleading unit combinations.
-    _prepare_axis(axes[0], result)
-    _plot_mujoco(axes[0], time_s, traces["fz_left_N"], "MuJoCo left GRF", linestyle="--", alpha=0.72)
-    _plot_mujoco(axes[0], time_s, traces["fz_right_N"], "MuJoCo right GRF", linestyle=":", alpha=0.72)
-    _plot_mujoco(axes[0], time_s, traces["fz_total_N"], "MuJoCo total GRF")
-    _plot_observed(axes[0], observed_time, observed["fz_total_N"], "observed total GRF")
-    _style_axis(axes[0], "Force-platform ground-reaction forces", "GRF (N)")
-    _legend(axes[0], ncol=2)
-
-    _prepare_axis(axes[1], result)
-    _plot_mujoco(axes[1], time_s, traces["com_z_m"], "MuJoCo COM z")
-    _style_axis(axes[1], "Center-of-mass vertical displacement channel", "COM z (m)")
-    _legend(axes[1])
-
-    _prepare_axis(axes[2], result)
-    _plot_mujoco(axes[2], time_s, traces["bar_velocity_m_s"], "MuJoCo LPT/bar velocity")
-    _plot_observed(axes[2], observed_time, observed["bar_velocity_m_s"], "observed LPT/bar velocity")
-    _style_axis(axes[2], "LPT velocity — bar velocity", "velocity (m/s)")
-    _legend(axes[2])
-
-    _prepare_axis(axes[3], result, labels=True)
-    _plot_mujoco(axes[3], time_s, traces["bar_displacement_m"], "MuJoCo LPT/bar displacement")
-    _plot_observed(axes[3], observed_time, observed["bar_displacement_m"], "observed LPT/bar displacement")
-    _style_axis(axes[3], "LPT displacement — bar displacement, not COM displacement", "displacement (m)")
-    axes[3].set_xlabel("time (s)", color=TEXT)
-    _legend(axes[3], loc="lower right")
-    for ax in axes:
-        ax.set_xlim(time_s[0], time_s[-1])
     _finish(fig, "combined_grf_com_lpt.png")
 
 
