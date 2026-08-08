@@ -18,7 +18,9 @@ The intended presentation output is `media/loaded_cmj_demo.mp4`, with a static
 observable comparison in `media/observable_fit.png` when generated locally.
 `python examples/plot_observables.py` also writes separated dark-background
 figures for force-platform metrics, global/foot/joint kinematics, contact
-mechanics, phase timing, and scalar summaries.
+mechanics, phase timing, and scalar summaries, plus one aligned combined figure
+(`media/combined_grf_com_lpt.png`) for GRFs, COM-z, LPT velocity, and LPT
+displacement.
 Those are derived artifacts from the committed source plant; the renderer is
 wired to the approved MakeHuman visual asset family, external bar, bilateral
 force plates, force/LPT traces, event markers, phase labels, and mechanics

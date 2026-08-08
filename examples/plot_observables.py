@@ -302,6 +302,52 @@ def _combined_measurements(result: dict[str, Any], observed: dict[str, Any]) -> 
     _finish(fig, "observable_fit.png")
 
 
+def _combined_grf_com_lpt(result: dict[str, Any], observed: dict[str, Any]) -> None:
+    """One aligned figure combining GRFs, COM-z, and both LPT channels."""
+
+    time_s, traces = _time_values(result)
+    observed_time = [float(value) for value in observed["time_s"]]
+    fig, axes = plt.subplots(4, 1, figsize=(13, 11.5), sharex=True, constrained_layout=True)
+    fig.suptitle(
+        "Loaded CMJ — GRFs, COM displacement, and LPT channels",
+        color=TEXT,
+        fontsize=14,
+        fontweight="bold",
+    )
+
+    # The panels share one time axis but retain their native units.  This keeps
+    # the requested signals in one figure without inventing a normalization or
+    # a second axis with misleading unit combinations.
+    _prepare_axis(axes[0], result)
+    _plot_mujoco(axes[0], time_s, traces["fz_left_N"], "MuJoCo left GRF", linestyle="--", alpha=0.72)
+    _plot_mujoco(axes[0], time_s, traces["fz_right_N"], "MuJoCo right GRF", linestyle=":", alpha=0.72)
+    _plot_mujoco(axes[0], time_s, traces["fz_total_N"], "MuJoCo total GRF")
+    _plot_observed(axes[0], observed_time, observed["fz_total_N"], "observed total GRF")
+    _style_axis(axes[0], "Force-platform ground-reaction forces", "GRF (N)")
+    _legend(axes[0], ncol=2)
+
+    _prepare_axis(axes[1], result)
+    _plot_mujoco(axes[1], time_s, traces["com_z_m"], "MuJoCo COM z")
+    _style_axis(axes[1], "Center-of-mass vertical displacement channel", "COM z (m)")
+    _legend(axes[1])
+
+    _prepare_axis(axes[2], result)
+    _plot_mujoco(axes[2], time_s, traces["bar_velocity_m_s"], "MuJoCo LPT/bar velocity")
+    _plot_observed(axes[2], observed_time, observed["bar_velocity_m_s"], "observed LPT/bar velocity")
+    _style_axis(axes[2], "LPT velocity — bar velocity", "velocity (m/s)")
+    _legend(axes[2])
+
+    _prepare_axis(axes[3], result, labels=True)
+    _plot_mujoco(axes[3], time_s, traces["bar_displacement_m"], "MuJoCo LPT/bar displacement")
+    _plot_observed(axes[3], observed_time, observed["bar_displacement_m"], "observed LPT/bar displacement")
+    _style_axis(axes[3], "LPT displacement — bar displacement, not COM displacement", "displacement (m)")
+    axes[3].set_xlabel("time (s)", color=TEXT)
+    _legend(axes[3], loc="lower right")
+    for ax in axes:
+        ax.set_xlim(time_s[0], time_s[-1])
+    _finish(fig, "combined_grf_com_lpt.png")
+
+
 def _force_plate_metrics(result: dict[str, Any]) -> None:
     time_s, traces = _time_values(result)
     fig, axes = plt.subplots(4, 1, figsize=(13, 11.5), sharex=True, constrained_layout=True)
@@ -572,6 +618,7 @@ def main() -> None:
     result = simulate_trial(load_named_parameters("synthetic_reference"), trial)
     observed = trial["observations"]
     _combined_measurements(result, observed)
+    _combined_grf_com_lpt(result, observed)
     _force_plate_metrics(result)
     _global_kinematics(result)
     _foot_kinematics(result)
@@ -582,6 +629,7 @@ def main() -> None:
     print("Wrote:")
     for name in (
         "observable_fit.png",
+        "combined_grf_com_lpt.png",
         "force_plate_metrics.png",
         "global_kinematics.png",
         "foot_kinematics.png",
