@@ -154,6 +154,62 @@ def test_qualified_asymmetry_is_known_and_mechanically_valid() -> None:
     assert abs(float(np.trapezoid(left - right, time))) > 5.0
 
 
+def test_asymmetry_pilot_panel_qualifies_smallest_alpha_with_exact_replay() -> None:
+    params = load_named_parameters("synthetic_reference")
+    pilot_alphas = (0.02, 0.04, 0.06)
+    propulsive_separations: list[float] = []
+    for alpha in pilot_alphas:
+        trial = {
+            "external_load_kg": 20.0,
+            "duration_s": 3.60,
+            "dt_s": plant.DT,
+            "drive_asymmetry_alpha": alpha,
+        }
+        first = plant.run_trial(params, trial, record=True)
+        second = plant.run_trial(params, trial, record=True)
+        assert first["valid"] is True
+        assert _physical_metrics(first)["mechanics_valid"] is True
+        assert first["events"]["phase_order_valid"] is True
+        assert first["events"]["takeoff_index"] < first["events"]["landing_index"]
+        assert first["diagnostics"]["drive_asymmetry_clip_count"] == 0
+        assert first["diagnostics"]["observed_phase_indices"] == list(range(7))
+        assert any(first["traces"]["left_foot_contact"])
+        assert any(first["traces"]["right_foot_contact"])
+        assert any(
+            not left and not right
+            for left, right in zip(
+                first["traces"]["left_foot_contact"],
+                first["traces"]["right_foot_contact"],
+            )
+        )
+        start = first["events"]["movement_onset_index"]
+        end = first["events"]["takeoff_index"]
+        propulsion_start = min(
+            range(start, end + 1),
+            key=lambda index: first["traces"]["root_z_m"][index],
+        )
+        time = np.asarray(first["traces"]["time_s"])[propulsion_start : end + 1]
+        left = np.asarray(first["traces"]["fz_left_N"])[propulsion_start : end + 1]
+        right = np.asarray(first["traces"]["fz_right_N"])[propulsion_start : end + 1]
+        separation = abs(float(np.trapezoid(left - right, time)))
+        propulsive_separations.append(separation)
+        assert separation > 5.0
+        for key in (
+            "fz_left_N",
+            "fz_right_N",
+            "fz_total_N",
+            "bar_displacement_m",
+            "bar_velocity_m_s",
+            "root_z_m",
+            "left_foot_contact",
+            "right_foot_contact",
+        ):
+            assert np.array_equal(
+                np.asarray(first["traces"][key]), np.asarray(second["traces"][key])
+            )
+    assert propulsive_separations[0] < propulsive_separations[1] < propulsive_separations[2]
+
+
 def test_dataset_regeneration_is_deterministic(tmp_path: Path) -> None:
     first = tmp_path / "first"
     second = tmp_path / "second"
