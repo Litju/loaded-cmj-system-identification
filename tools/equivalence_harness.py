@@ -110,7 +110,7 @@ def _event_error(left: Any, right: Any, key: str) -> float:
     return abs(float(a) - float(b))
 
 
-def run_equivalence(source_root: str | Path, trial_id: str = "public_001", tolerance: float = 1e-12) -> dict[str, Any]:
+def run_equivalence(source_root: str | Path, trial_id: str = "20kg_nominal_a", tolerance: float = 1e-12) -> dict[str, Any]:
     """Compare the target against one trial from a separately located source."""
 
     source_root = Path(source_root).resolve()
@@ -207,7 +207,7 @@ def run_equivalence(source_root: str | Path, trial_id: str = "public_001", toler
 def main() -> int:
     parser = argparse.ArgumentParser(description="Audit compiled-model and rollout equivalence.")
     parser.add_argument("--source-root", required=True, type=Path)
-    parser.add_argument("--trial-id", default="public_001")
+    parser.add_argument("--trial-id", default="20kg_nominal_a")
     parser.add_argument("--tolerance", type=float, default=1e-12)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()

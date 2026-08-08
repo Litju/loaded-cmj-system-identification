@@ -5,11 +5,16 @@ physical units. It is separate from fitting and is intended to expose where a
 parameter configuration agrees or disagrees with the measurement and mechanics
 contracts.
 
+Every checked-in validation trial uses the fixed 20 kg external load. The split
+retains same-load depth, timing, measurement-realization, contact, and
+repeatability coverage rather than varying the external load.
+
 ## Reported quantities
 
 `validate_trial` reports:
 
 - force-platform total RMSE and maximum absolute error;
+- left/right force-platform traces and their aggregation consistency;
 - bar displacement RMSE and maximum absolute error;
 - bar/LPT velocity RMSE;
 - errors in available takeoff velocity, impulse-momentum height, propulsive
@@ -53,6 +58,9 @@ report = validate_parameters(
 )
 assert report["valid"]
 ```
+
+The example above evaluates the complete validation split. For a quick local
+smoke run, `python examples/validate.py` evaluates two fixed-load trials.
 
 The thresholds and event definitions are explicitly recorded in
 `configs/preprocessing.json` and `src/loaded_cmj/validation.py`.

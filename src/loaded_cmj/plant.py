@@ -1,9 +1,9 @@
-"""Public deterministic plant utilities for loaded CMJ force-plate/LPT sysid.
+"""Public deterministic plant utilities for loaded CMJ system identification.
 
-This module is intentionally public task infrastructure. It validates bounded
-static parameter submissions, builds the locked linked sagittal MuJoCo model
+This module is intentionally public research infrastructure. It validates bounded
+static parameter configurations, builds the locked linked sagittal MuJoCo model
 when MuJoCo is available, and exposes deterministic trial, preprocessing, event,
-and summary utilities for future public data generation and scoring slices.
+and summary utilities for the public research dataset.
 The force plate signal is Fz_total from both feet. Takeoff requires sustained
 no-foot-contact. LPT is bar-only, not COM. hIM is impulse-momentum jump height.
 """
@@ -147,7 +147,7 @@ _CONTACT_FZ_EPS_N = 1e-6
 # foot contact geoms nearly flat on the plate with minimal initial penetration.
 _RESET_ROOT_Z_M = -0.09
 # New loaded-cmj-telemetry-v2 per-timestep channels exposed on the rollout trace
-# in addition to (never replacing) the canonical scorer channels. Written as
+# in addition to (never replacing) the canonical physical channels. Written as
 # explicit literals (one per foot contact geom) so the exact channel names are
 # discoverable in source, e.g. left_heel_fz_N / left_heel_fx_N.
 _REGION_CONTACT_KEYS = (
@@ -863,6 +863,7 @@ def _default_trial(trial: dict[str, Any] | None) -> dict[str, Any]:
         "depth_scale": 1.0,
         "braking_duration_scale": 1.0,
         "propulsion_duration_scale": 1.0,
+        "drive_asymmetry_alpha": 0.0,
         "force_plate_noise_sd_N": 0.0,
         "duration_s": PHASES["landing_diagnostic"][1],
         "dt_s": DT,
@@ -1047,6 +1048,44 @@ def _leg_pd_ctrl(
     return ctrl
 
 
+def _apply_bilateral_drive_asymmetry(
+    model: Any,
+    act_index: dict[str, int],
+    ctrl: list[float],
+    alpha: float,
+) -> tuple[list[float], int, float]:
+    """Apply a bounded, balanced synthetic left/right drive excitation.
+
+    ``alpha`` is a known trial excitation, not a fitted plant coordinate. The
+    left and right six-actuator leg groups are scaled by ``1 + alpha`` and
+    ``1 - alpha`` respectively, then limited by the compiled actuator ranges.
+    A zero value returns the controller output unchanged so nominal mechanics
+    retain the pre-excitation numerical path.
+    """
+
+    alpha = float(alpha)
+    if not math.isfinite(alpha) or abs(alpha) > 0.20:
+        raise ValueError("drive_asymmetry_alpha must be finite and within +/-0.20")
+    if alpha == 0.0:
+        return ctrl, 0, 0.0
+
+    scaled = list(ctrl)
+    clip_count = 0
+    max_command_delta = 0.0
+    for side, scale in (("left", 1.0 + alpha), ("right", 1.0 - alpha)):
+        for joint in ("hip", "knee", "ankle"):
+            idx = act_index[f"{side}_{joint}_torque"]
+            requested = float(ctrl[idx]) * scale
+            lo = float(model.actuator_ctrlrange[idx][0])
+            hi = float(model.actuator_ctrlrange[idx][1])
+            limited = _clamp(requested, lo, hi)
+            if limited != requested:
+                clip_count += 1
+            max_command_delta = max(max_command_delta, abs(limited - float(ctrl[idx])))
+            scaled[idx] = limited
+    return scaled, clip_count, max_command_delta
+
+
 def _simulate_trial_history(
     params: dict[str, Any],
     trial: dict[str, Any],
@@ -1140,6 +1179,9 @@ def _simulate_trial_history(
     motor_torque_norms: list[float] = []
     aux_force_norms: list[float] = []
     xfrc_force_norms: list[float] = []
+    drive_asymmetry_alpha = float(trial.get("drive_asymmetry_alpha", 0.0))
+    drive_asymmetry_clip_count = 0
+    drive_asymmetry_max_command_delta = 0.0
     region_contact: dict[str, list[bool]] = {g: [] for g in FOOT_CONTACT_GEOMS}
     region_fz: dict[str, list[float]] = {g: [] for g in FOOT_CONTACT_GEOMS}
     region_fx: dict[str, list[float]] = {g: [] for g in FOOT_CONTACT_GEOMS}
@@ -1185,6 +1227,13 @@ def _simulate_trial_history(
             root_x=current_root_x,
             root_pitch_target=controller.root_pitch_target(),
             pd_scale=_PROPULSION_PD_SCALE if phase == "PROPULSION" else (1.0, 1.0),
+        )
+        motor_ctrl, clip_count, command_delta = _apply_bilateral_drive_asymmetry(
+            model, act_index, motor_ctrl, drive_asymmetry_alpha
+        )
+        drive_asymmetry_clip_count += clip_count
+        drive_asymmetry_max_command_delta = max(
+            drive_asymmetry_max_command_delta, command_delta
         )
         _clean_core.apply_control(model, data, motor_ctrl)
         _clean_core.step(model, data)
@@ -1420,7 +1469,7 @@ def _simulate_trial_history(
     diagnostics = {
         "used_mujoco": True,
         "settle_duration_s": SETTLE_DURATION_S,
-        "scored_step_count": n,
+        "rollout_step_count": n,
         "dt_s": dt,
         "qvel_norm_max": max(qvel_norms) if qvel_norms else 0.0,
         "root_x_abs_max_m": max(abs(x) for x in root_x) if root_x else 0.0,
@@ -1451,6 +1500,13 @@ def _simulate_trial_history(
         "final_com_z_m": float(data.subtree_com[ids["pelvis_body"]][2]),
         "bar_source": "mujoco body/site positions",
         "lpt_source": "mujoco site positions measurement model",
+        "drive_asymmetry_alpha": drive_asymmetry_alpha,
+        "drive_asymmetry_left_scale": 1.0 + drive_asymmetry_alpha,
+        "drive_asymmetry_right_scale": 1.0 - drive_asymmetry_alpha,
+        "drive_asymmetry_clip_count": int(drive_asymmetry_clip_count),
+        "drive_asymmetry_clip_fraction": float(drive_asymmetry_clip_count / max(n * int(model.nu), 1)),
+        "drive_asymmetry_max_command_delta_Nm": float(drive_asymmetry_max_command_delta),
+        "drive_asymmetry_is_known_excitation": bool(drive_asymmetry_alpha != 0.0),
     }
 
     if not record:

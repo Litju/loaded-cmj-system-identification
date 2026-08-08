@@ -14,7 +14,7 @@ def test_source_target_equivalence() -> None:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     from tools.equivalence_harness import run_equivalence
 
-    report = run_equivalence(Path(SOURCE_ROOT), trial_id="public_001", tolerance=1e-12)
+    report = run_equivalence(Path(SOURCE_ROOT), trial_id="20kg_nominal_a", tolerance=1e-12)
     assert report["compiled_model_equivalence"] == "PASS"
     assert report["trajectory_equivalence"] == "PASS"
     assert report["measurement_equivalence"] == "PASS"

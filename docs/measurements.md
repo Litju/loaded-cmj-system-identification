@@ -11,7 +11,7 @@ Its public channel names, units, and transformations are defined by
 | --- | --- | --- |
 | `fz_left_N` | N | Vertical force attributed to the left force-plate region |
 | `fz_right_N` | N | Vertical force attributed to the right force-plate region |
-| `fz_total_N` | N | Bilateral total vertical force |
+| `fz_total_N` | N | Bilateral total vertical force, exactly `fz_left_N + fz_right_N` |
 | `fnet_N` | N | `fz_total_N - Wsys`, after the source weighing baseline |
 | `total_fz_N` / `total_fx_N` | N | Raw contact-force diagnostics before the canonical measurement transform |
 | `cop_x_m` | m | Force-platform center of pressure; undefined outside contact uses the source sentinel semantics |
@@ -20,6 +20,13 @@ The weighing baseline `Wsys` is the mean total vertical force over the final
 1.00 s of the 1.50 s weighing interval. The source system-mass estimate is
 `Wsys / 9.81`; this is a measurement-derived diagnostic, not a replacement for
 the model's configured masses.
+
+For the qualified bilateral excitation, left/right propulsive and braking
+impulses are descriptive physical quantities. Each is the time integral of the
+corresponding side's force after subtracting that side's quiet weighing mean,
+over the event-defined concentric or braking interval. They are reported in
+N·s in the asymmetry trial's `bilateral_measurements` section and are not
+compressed into a clinical or readiness index.
 
 ## Bar/LPT channels
 

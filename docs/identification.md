@@ -1,7 +1,8 @@
 # Identification
 
 `loaded_cmj.identification.identify_parameters` is a bounded nonlinear
-least-squares research path against force-platform total and bar/LPT
+least-squares research path against bilateral force-platform total and
+bar/LPT
 displacement observations, with summary and event-derived residual diagnostics.
 Every residual evaluation re-runs the source full-morphology MuJoCo plant; no
 trajectory is replayed from the observations.
@@ -35,6 +36,11 @@ parameter is independently recoverable from every trial.
 
 The synthetic reference configuration is useful for reproducing observations;
 it does not establish experimental validity or subject-specific inference.
+
+All public fits use the fixed 20 kg experiment. The bilateral drive condition
+is a known synthetic excitation and is intentionally absent from the 27-scalar
+identification vector; the physical left/right traces remain available for
+diagnostics.
 
 ## Interpreting the examples
 

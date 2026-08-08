@@ -2300,7 +2300,8 @@ def _central_second_derivative(time_s: list[float], values: list[float]) -> list
 
 def _compose_overlay(frame: np.ndarray, *, t_s: float, phase: str, fz_N: float,
                      root_z: float, com_z: float, bar_z: float, bar_vel: float,
-                     bar_disp: float, bodyweight_N: float,
+                     bar_disp: float, bodyweight_N: float, body_mass_kg: float,
+                     external_load_kg: float,
                      window: tuple[float, float], phase_spans: list[tuple[float, float, str]],
                      events: dict[str, float], slowmo: float, event_flash: str | None,
                      grf: tuple[float, float, float, str] | None = None,
@@ -2319,7 +2320,15 @@ def _compose_overlay(frame: np.ndarray, *, t_s: float, phase: str, fz_N: float,
     # Title band (top-left).
     fill_rect(frame, 0, 0, w, 46, COL_BG_PANEL, 0.55)
     draw_text(frame, 18, 10, "LOADED COUNTERMOVEMENT JUMP", COL_TEXT, scale=3, spacing=2)
-    draw_text(frame, 18, 34, "AUTHORITATIVE ROLLOUT  MAKEHUMAN MESH  BODY 75 KG + BAR 20 KG", COL_DIM, scale=1, spacing=1)
+    draw_text(
+        frame,
+        18,
+        34,
+        f"AUTHORITATIVE ROLLOUT  MAKEHUMAN MESH  BODY {_fmt(body_mass_kg, 2)} KG + BAR {_fmt(external_load_kg, 2)} KG",
+        COL_DIM,
+        scale=1,
+        spacing=1,
+    )
     draw_text(frame, w - 250, 12, f"SLOW-MO {_fmt(slowmo, 2)}X", COL_ACCENT, scale=2, spacing=1)
     draw_text(frame, w - 250, 30, "REAL TIME SHOWN", COL_DIM, scale=1, spacing=1)
 
@@ -2727,7 +2736,10 @@ def main(argv: list[str] | None = None) -> int:
                 frame, t_s=time_s[idx], phase=phase_names[phase_index[idx]], fz_N=fz_total[idx],
                 root_z=root_z[idx], com_z=com_z_series[idx], bar_z=bar_z[idx],
                 bar_vel=bar_vel[idx], bar_disp=bar_disp[idx],
-                bodyweight_N=bodyweight_N, window=window, phase_spans=phase_spans,
+                bodyweight_N=bodyweight_N,
+                body_mass_kg=float(params["body_mass_kg"]),
+                external_load_kg=float(trial["external_load_kg"]),
+                window=window, phase_spans=phase_spans,
                 events=event_times, slowmo=slowmo, event_flash=_nearest_flash(idx),
                 grf=grf_dist[idx], grf_history=grf_history, cop_x=cop_x_series[idx],
                 force_graph=force_graph, joint_panel=joint_panel,

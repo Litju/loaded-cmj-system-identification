@@ -697,7 +697,7 @@ def _summary_metrics(result: dict[str, Any]) -> None:
 def main() -> None:
     _configure_style()
     MEDIA.mkdir(parents=True, exist_ok=True)
-    trial = load_trial("public_001", split="identification")
+    trial = load_trial("20kg_nominal_a", split="identification")
     # One rollout feeds every figure.  No plot invokes simulation a second time.
     result = simulate_trial(load_named_parameters("synthetic_reference"), trial)
     observed = trial["observations"]

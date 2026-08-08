@@ -1,10 +1,29 @@
 # Methodology
 
+## Scope and design
+
+This release is a deterministic within-plant system-identification study at a
+fixed 20 kg external bar load. Every identification and validation fixture
+uses the same load while varying only the validated depth, phase-timing,
+measurement-realization, and qualified known-excitation conditions documented
+in the dataset manifest. The modeled athlete is a synthetic rigid-body
+multibody abstraction; it is not a muscle-level physiological model or a
+subject-specific digital twin.
+
+The two nominal conditions have identical mechanics and distinct declared
+measurement/noise seeds. The bilateral condition applies a balanced,
+experiment-layer drive scaling with the smallest qualified alpha and reports
+the direct left/right force and impulse traces. Alpha is known and fixed; it is
+not part of the fitted parameter vector. Because these are deterministic
+synthetic conditions, effect sizes and replay errors are reported rather than
+population-inference p-values.
+
 ## Forward experiment
 
 The experiment uses deterministic 2 ms MuJoCo rollouts of the committed
-loaded-CMJ MJCF. A trial specifies external bar load, countermovement-depth and
-phase-duration scales, and the source simulation duration. The plant performs a
+loaded-CMJ MJCF. A trial specifies the fixed 20 kg external bar load,
+countermovement-depth and phase-duration scales, and the source simulation
+duration. The plant performs a
 2 s settling rollout, resets time, then records the complete trial sequence.
 The settling interval is an initialization procedure; it is not included in the
 reported trial time series.
@@ -19,7 +38,7 @@ events remain the authority for takeoff and landing.
 The observation pipeline:
 
 1. runs the full plant at its native timestep;
-2. records bilateral force-platform, bar/LPT, contact, root, COM, joint, and
+2. records left/right/total force-platform, bar/LPT, contact, root, COM, joint, and
    bar-rack telemetry;
 3. applies the source force-platform weighing/net-force transform;
 4. preserves LPT delay, filtering, scaling, offset, and bar-only
@@ -50,6 +69,10 @@ residuals by the declared 0.1 m fitting scale; event/summary residuals use the
 source explicit scales in `observation_residual_vector`. The result retains the
 full structured parameter object and reports optimizer status and rollout
 failures.
+
+The fitted vector contains no bilateral-drive excitation coordinate. The
+asymmetry condition is a known trial descriptor and remains fixed during
+identification.
 
 ## Validation
 

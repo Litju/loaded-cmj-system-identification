@@ -16,14 +16,16 @@ TASK_ID = "loaded-cmj-system-identification"
 SCHEMA_VERSION = "loaded-cmj-dataset-v1"
 GENERATION_SEED = 503_117
 GENERATOR_NAME = "loaded_cmj_5l_5c_mujoco_primary_dataset_generator"
-GENERATOR_VERSION = "1.4.0"
+GENERATOR_VERSION = "1.5.0"
+PUBLIC_EXTERNAL_LOAD_KG = 20.0
+QUALIFIED_ASYMMETRY_ALPHA = 0.02
 
 SCRIPT_PATH = Path(__file__).resolve()
 REPOSITORY_ROOT = SCRIPT_PATH.parents[1]
 DATA_DIR = REPOSITORY_ROOT / "data"
 CONFIG_DIR = REPOSITORY_ROOT / "configs"
 SRC_PLANT_PATH = REPOSITORY_ROOT / "src" / "loaded_cmj" / "plant.py"
-PLANT_LOAD_KEY = "external" + "_load_kg"
+PLANT_LOAD_KEY = "external_load_kg"
 
 GRID_START_S = 0.0
 GRID_END_S = 3.60
@@ -33,6 +35,8 @@ COMMON_GRID_S = [round(GRID_START_S + i * GRID_DT_S, 2) for i in range(GRID_SAMP
 
 OBSERVATION_KEYS = [
     "time_s",
+    "fz_left_N",
+    "fz_right_N",
     "fz_total_N",
     "bar_displacement_m",
     "bar_velocity_m_s",
@@ -81,76 +85,76 @@ SYNTHETIC_REFERENCE_PARAMS = {
 
 PUBLIC_TRIAL_SPECS = [
     {
-        "trial_id": "public_001",
-        "trial_group": "nominal_reference",
-        "bar_load_kg": 20.0,
-        "load_condition": "nominal",
+        "trial_id": "20kg_nominal_a",
+        "trial_group": "nominal_repeatability",
+        "external_load_kg": PUBLIC_EXTERNAL_LOAD_KG,
         "depth_scale": 1.0,
         "braking_duration_scale": 1.0,
         "propulsion_duration_scale": 1.0,
+        "drive_asymmetry_alpha": 0.0,
         "noise_seed": 61101,
         "force_noise_sd_N": 1.0,
         "bar_displacement_noise_sd_m": 0.00010,
     },
     {
-        "trial_id": "public_002",
-        "trial_group": "crossed_load_depth_timing",
-        "bar_load_kg": 19.0,
-        "load_condition": "slightly_lighter",
-        "depth_scale": 1.12,
-        "braking_duration_scale": 0.96,
-        "propulsion_duration_scale": 1.02,
+        "trial_id": "20kg_nominal_b",
+        "trial_group": "nominal_repeatability",
+        "external_load_kg": PUBLIC_EXTERNAL_LOAD_KG,
+        "depth_scale": 1.0,
+        "braking_duration_scale": 1.0,
+        "propulsion_duration_scale": 1.0,
+        "drive_asymmetry_alpha": 0.0,
         "noise_seed": 61102,
         "force_noise_sd_N": 1.0,
         "bar_displacement_noise_sd_m": 0.00010,
     },
     {
-        "trial_id": "public_003",
-        "trial_group": "crossed_load_depth_timing",
-        "bar_load_kg": 20.5,
-        "load_condition": "slightly_heavier",
-        "depth_scale": 1.0,
-        "braking_duration_scale": 1.04,
-        "propulsion_duration_scale": 0.98,
+        "trial_id": "20kg_depth",
+        "trial_group": "countermovement_depth",
+        "external_load_kg": PUBLIC_EXTERNAL_LOAD_KG,
+        "depth_scale": 1.12,
+        "braking_duration_scale": 1.0,
+        "propulsion_duration_scale": 1.0,
+        "drive_asymmetry_alpha": 0.0,
         "noise_seed": 61103,
-        "force_noise_sd_N": 1.1,
-        "bar_displacement_noise_sd_m": 0.00011,
+        "force_noise_sd_N": 1.0,
+        "bar_displacement_noise_sd_m": 0.00010,
     },
     {
-        "trial_id": "public_004",
-        "trial_group": "crossed_load_depth_timing",
-        "bar_load_kg": 20.0,
-        "load_condition": "nominal",
+        "trial_id": "20kg_timing",
+        "trial_group": "phase_timing",
+        "external_load_kg": PUBLIC_EXTERNAL_LOAD_KG,
         "depth_scale": 1.0,
         "braking_duration_scale": 1.04,
         "propulsion_duration_scale": 1.02,
+        "drive_asymmetry_alpha": 0.0,
         "noise_seed": 61104,
-        "force_noise_sd_N": 1.1,
-        "bar_displacement_noise_sd_m": 0.00011,
+        "force_noise_sd_N": 1.0,
+        "bar_displacement_noise_sd_m": 0.00010,
     },
     {
-        "trial_id": "public_005",
-        "trial_group": "crossed_sensor_excitation",
-        "bar_load_kg": 19.0,
-        "load_condition": "slightly_lighter",
-        "depth_scale": 1.0,
-        "braking_duration_scale": 1.04,
+        "trial_id": "20kg_depth_timing",
+        "trial_group": "countermovement_depth_timing",
+        "external_load_kg": PUBLIC_EXTERNAL_LOAD_KG,
+        "depth_scale": 1.12,
+        "braking_duration_scale": 0.96,
         "propulsion_duration_scale": 1.02,
+        "drive_asymmetry_alpha": 0.0,
         "noise_seed": 61105,
         "force_noise_sd_N": 1.0,
         "bar_displacement_noise_sd_m": 0.00010,
     },
     {
-        "trial_id": "public_006",
-        "trial_group": "crossed_sensor_excitation",
-        "bar_load_kg": 20.5,
-        "load_condition": "slightly_heavier",
+        "trial_id": "20kg_bilateral_asymmetry",
+        "trial_group": "synthetic_interlimb_drive_asymmetry",
+        "external_load_kg": PUBLIC_EXTERNAL_LOAD_KG,
         "depth_scale": 1.0,
         "braking_duration_scale": 1.0,
         "propulsion_duration_scale": 1.0,
+        "drive_asymmetry_alpha": QUALIFIED_ASYMMETRY_ALPHA,
         "noise_seed": 61106,
-        "force_noise_sd_N": 1.1,
-        "bar_displacement_noise_sd_m": 0.00011,
+        "force_noise_sd_N": 1.0,
+        "bar_displacement_noise_sd_m": 0.00010,
     },
 ]
 
@@ -273,10 +277,11 @@ def _make_trial(
     include_validation_descriptor: bool,
 ) -> dict[str, Any]:
     trial_descriptor = {
-        PLANT_LOAD_KEY: spec["bar_load_kg"],
+        PLANT_LOAD_KEY: spec["external_load_kg"],
         "depth_scale": spec["depth_scale"],
         "braking_duration_scale": spec["braking_duration_scale"],
         "propulsion_duration_scale": spec["propulsion_duration_scale"],
+        "drive_asymmetry_alpha": spec.get("drive_asymmetry_alpha", 0.0),
         "duration_s": GRID_END_S,
         "dt_s": plant.DT,
     }
@@ -298,24 +303,32 @@ def _make_trial(
         "trial_id": spec["trial_id"],
         "trial_group": spec["trial_group"],
     }
-    if split == "public":
-        trial["load_condition"] = spec["load_condition"]
-        trial["bar_load_kg"] = _round(float(spec["bar_load_kg"]), 3)
-    else:
-        trial["bar_load_kg"] = _round(float(spec["bar_load_kg"]), 3)
+    trial["external_load_kg"] = _round(float(spec["external_load_kg"]), 3)
+    trial["bar_load_kg"] = trial["external_load_kg"]
     trial.update({
         "depth_scale": _round(float(spec["depth_scale"]), 4),
         "braking_duration_scale": _round(float(spec["braking_duration_scale"]), 4),
         "propulsion_duration_scale": _round(float(spec["propulsion_duration_scale"]), 4),
+        "drive_asymmetry_alpha": _round(float(spec.get("drive_asymmetry_alpha", 0.0)), 4),
     })
+    if spec.get("drive_asymmetry_alpha", 0.0) != 0.0:
+        trial["known_excitation"] = "synthetic_interlimb_drive_asymmetry"
     if include_validation_descriptor:
         trial.update(_validation_descriptor_fields(spec))
         if "repeat_id" in spec:
             trial["repeat_id"] = spec["repeat_id"]
 
+    fz_left_observed = [_round(x, 3) for x in observed_trace["fz_left_N"]]
+    fz_right_observed = [_round(x, 3) for x in observed_trace["fz_right_N"]]
+    fz_total_observed = [
+        _round(left + right, 3)
+        for left, right in zip(fz_left_observed, fz_right_observed)
+    ]
     trial["observations"] = {
         "time_s": [_round(t, 2) for t in observed_trace["time_s"]],
-        "fz_total_N": [_round(x, 3) for x in observed_trace["fz_total_N"]],
+        "fz_left_N": fz_left_observed,
+        "fz_right_N": fz_right_observed,
+        "fz_total_N": fz_total_observed,
         "bar_displacement_m": [_round(x, 6) for x in observed_trace["bar_displacement_m"]],
         "bar_velocity_m_s": [_round(x, 6) for x in observed_trace["bar_velocity_m_s"]],
     }
@@ -329,6 +342,8 @@ def _make_trial(
         key: _round(float(summary[key]), 6)
         for key in SUMMARY_KEYS
     }
+    if float(spec.get("drive_asymmetry_alpha", 0.0)) != 0.0:
+        trial["bilateral_measurements"] = _bilateral_measurements(observed_trace, events)
     _assert_trial_is_finite(trial)
     return trial
 
@@ -341,22 +356,36 @@ def _observed_resampled_trace(
 ) -> dict[str, Any]:
     rng = SplitMix64(GENERATION_SEED ^ noise_seed)
     native_time = _float_list(raw_trace["time_s"])
-    native_fz = [
-        max(0.0, float(x) + force_noise_sd_N * rng.normal())
-        for x in _float_list(raw_trace["fz_total_N"])
-    ]
+    raw_left = _float_list(raw_trace["fz_left_N"])
+    raw_right = _float_list(raw_trace["fz_right_N"])
+    native_left: list[float] = []
+    native_right: list[float] = []
+    for left, right in zip(raw_left, raw_right):
+        total = max(0.0, left + right + force_noise_sd_N * rng.normal())
+        raw_total = left + right
+        if raw_total > 0.0:
+            scale = total / raw_total
+            native_left_value = left * scale
+            native_right_value = right * scale
+        else:
+            native_left_value = 0.0
+            native_right_value = 0.0
+        native_left.append(native_left_value)
+        native_right.append(native_right_value)
     native_bar_disp = [
         float(x) + bar_displacement_noise_sd_m * rng.normal()
         for x in _float_list(raw_trace["bar_displacement_m"])
     ]
 
-    fz_total = _resample_linear(native_time, native_fz, COMMON_GRID_S)
+    fz_left = _resample_linear(native_time, native_left, COMMON_GRID_S)
+    fz_right = _resample_linear(native_time, native_right, COMMON_GRID_S)
+    fz_total = [left + right for left, right in zip(fz_left, fz_right)]
     bar_disp = _resample_linear(native_time, native_bar_disp, COMMON_GRID_S)
     bar_vel = _differentiate(COMMON_GRID_S, bar_disp)
     trace = {
         "time_s": list(COMMON_GRID_S),
-        "fz_left_N": _resample_linear(native_time, _float_list(raw_trace["fz_left_N"]), COMMON_GRID_S),
-        "fz_right_N": _resample_linear(native_time, _float_list(raw_trace["fz_right_N"]), COMMON_GRID_S),
+        "fz_left_N": fz_left,
+        "fz_right_N": fz_right,
         "fz_total_N": fz_total,
         "fnet_N": [0.0 for _ in COMMON_GRID_S],
         "root_z_m": _resample_linear(native_time, _float_list(raw_trace["root_z_m"]), COMMON_GRID_S),
@@ -372,6 +401,50 @@ def _observed_resampled_trace(
     return trace
 
 
+def _integrate_segment(time_s: list[float], values: list[float], start: int, end: int) -> float:
+    if end <= start:
+        return 0.0
+    return sum(
+        0.5 * (float(values[i]) + float(values[i + 1]))
+        * (float(time_s[i + 1]) - float(time_s[i]))
+        for i in range(start, end)
+    )
+
+
+def _bilateral_measurements(
+    trace: dict[str, Any],
+    events: dict[str, Any],
+) -> dict[str, Any]:
+    """Return direct side-specific impulse diagnostics for the known excitation."""
+
+    time_s = _float_list(trace["time_s"])
+    root_z = _float_list(trace["root_z_m"])
+    left = _float_list(trace["fz_left_N"])
+    right = _float_list(trace["fz_right_N"])
+    onset = int(events["movement_onset_index"])
+    takeoff = int(events["takeoff_index"])
+    propulsion_start = min(range(onset, takeoff + 1), key=lambda i: root_z[i])
+    quiet = [i for i, t in enumerate(time_s) if 0.50 <= t <= 1.50]
+    if not quiet:
+        raise ValueError("no quiet samples for bilateral impulse diagnostics")
+    left_quiet = sum(left[i] for i in quiet) / len(quiet)
+    right_quiet = sum(right[i] for i in quiet) / len(quiet)
+    left_net = [value - left_quiet for value in left]
+    right_net = [value - right_quiet for value in right]
+    return {
+        "definition": "side force integrated after subtracting that side's quiet weighing mean",
+        "units": "N*s",
+        "braking_phase_start_time_s": _round(time_s[onset], 2),
+        "braking_phase_end_time_s": _round(time_s[propulsion_start], 2),
+        "propulsive_phase_start_time_s": _round(time_s[propulsion_start], 2),
+        "propulsive_phase_end_time_s": _round(time_s[takeoff], 2),
+        "left_braking_impulse_Ns": _round(_integrate_segment(time_s, left_net, onset, propulsion_start), 6),
+        "right_braking_impulse_Ns": _round(_integrate_segment(time_s, right_net, onset, propulsion_start), 6),
+        "left_propulsive_impulse_Ns": _round(_integrate_segment(time_s, left_net, propulsion_start, takeoff), 6),
+        "right_propulsive_impulse_Ns": _round(_integrate_segment(time_s, right_net, propulsion_start, takeoff), 6),
+    }
+
+
 def _validation_descriptor_fields(spec: dict[str, Any]) -> dict[str, Any]:
     fields: dict[str, Any] = {
         "observation_noise_seed": int(spec["noise_seed"]),
@@ -381,99 +454,89 @@ def _validation_descriptor_fields(spec: dict[str, Any]) -> dict[str, Any]:
     }
     if "repeat_index" in spec:
         fields["repeat_index"] = int(spec["repeat_index"])
-    if "force_plate_scale_bias_contact_cross" in spec["trial_group"]:
-        fields["force_plate_bias_N"] = SYNTHETIC_REFERENCE_PARAMS["force_plate_bias_N"]
-        fields["force_plate_scale"] = SYNTHETIC_REFERENCE_PARAMS["force_plate_scale"]
-    if "movement_encoder_rack_grip_cross" in spec["trial_group"]:
-        fields["encoder_scale"] = SYNTHETIC_REFERENCE_PARAMS["encoder_scale"]
-        fields["encoder_delay_steps"] = SYNTHETIC_REFERENCE_PARAMS["encoder_delay_steps"]
-        fields["encoder_filter_tau_s"] = SYNTHETIC_REFERENCE_PARAMS["encoder_filter_tau_s"]
-    if "force_plate_scale_bias_contact_cross" in spec["trial_group"]:
-        fields["contact_stiffness_N_m"] = SYNTHETIC_REFERENCE_PARAMS["contact_stiffness_N_m"]
-        fields["contact_damping_N_s_m"] = SYNTHETIC_REFERENCE_PARAMS["contact_damping_N_s_m"]
     return fields
 
 
 def _validation_trial_specs() -> list[dict[str, Any]]:
     groups = [
         (
-            "load_depth_timing_cross",
-            "crossed external load, countermovement depth, and braking/propulsion timing",
+            "depth_timing_variants",
+            "same-load countermovement-depth and braking/propulsion timing coverage",
             [
-                (18.5, 1.16, 0.94, 1.04, 71101, 1.3, 0.00013),
-                (19.5, 1.08, 1.06, 0.96, 71102, 1.4, 0.00013),
-                (20.5, 0.96, 0.94, 1.04, 71103, 1.4, 0.00014),
-                (21.5, 1.04, 1.06, 0.96, 71104, 1.5, 0.00014),
+                (1.16, 0.94, 1.04, 71101, 1.3, 0.00013),
+                (1.08, 1.06, 0.96, 71102, 1.4, 0.00013),
+                (0.96, 0.94, 1.04, 71103, 1.4, 0.00014),
+                (1.04, 1.06, 0.96, 71104, 1.5, 0.00014),
             ],
         ),
         (
-            "load_depth_timing_cross_repeat",
-            "independent crossed load-depth-timing combinations with repeated noise",
+            "depth_timing_repeatability",
+            "same-load depth and phase-timing repeatability with independent measurement realizations",
             [
-                (18.5, 1.04, 1.06, 0.96, 71201, 1.4, 0.00014),
-                (19.5, 1.16, 0.94, 1.04, 71202, 1.4, 0.00014),
-                (20.5, 1.08, 1.06, 0.96, 71203, 1.5, 0.00015),
-                (21.5, 0.96, 0.94, 1.04, 71204, 1.5, 0.00015),
+                (1.04, 1.06, 0.96, 71201, 1.4, 0.00014),
+                (1.16, 0.94, 1.04, 71202, 1.4, 0.00014),
+                (1.08, 1.06, 0.96, 71203, 1.5, 0.00015),
+                (0.96, 0.94, 1.04, 71204, 1.5, 0.00015),
             ],
         ),
         (
-            "force_plate_scale_bias_contact_cross",
-            "crossed load, force-plate observability, and contact excitation",
+            "force_platform_contact_variants",
+            "same-load bilateral force-platform and contact coverage across phase variants",
             [
-                (18.5, 1.12, 0.96, 1.02, 71301, 1.5, 0.00015),
-                (19.5, 1.00, 1.04, 0.98, 71302, 1.5, 0.00015),
-                (20.5, 1.08, 0.96, 1.02, 71303, 1.6, 0.00016),
-                (21.5, 1.00, 1.04, 0.98, 71304, 1.6, 0.00016),
+                (1.12, 0.96, 1.02, 71301, 1.5, 0.00015),
+                (1.00, 1.04, 0.98, 71302, 1.5, 0.00015),
+                (1.08, 0.96, 1.02, 71303, 1.6, 0.00016),
+                (1.00, 1.04, 0.98, 71304, 1.6, 0.00016),
             ],
         ),
         (
-            "movement_encoder_rack_grip_cross",
-            "crossed movement/bar excursion, encoder dynamics, and rack/grip compliance",
+            "bar_kinematics_variants",
+            "same-load bar/LPT kinematics across phase variants",
             [
-                (18.5, 1.16, 1.04, 0.98, 71401, 1.5, 0.00015),
-                (19.5, 1.04, 0.96, 1.02, 71402, 1.5, 0.00015),
-                (20.5, 1.12, 1.04, 0.98, 71403, 1.6, 0.00016),
-                (21.5, 0.96, 0.96, 1.02, 71404, 1.6, 0.00016),
+                (1.16, 1.04, 0.98, 71401, 1.5, 0.00015),
+                (1.04, 0.96, 1.02, 71402, 1.5, 0.00015),
+                (1.12, 1.04, 0.98, 71403, 1.6, 0.00016),
+                (0.96, 0.96, 1.02, 71404, 1.6, 0.00016),
             ],
         ),
         (
-            "force_plate_scale_bias_contact_cross_repeat",
-            "repeat cross for force-plate scale/bias observability and contact excitation",
+            "force_platform_contact_repeatability",
+            "same-load force-platform/contact repeatability with independent measurement realizations",
             [
-                (18.5, 1.04, 1.04, 0.98, 71501, 1.8, 0.00015),
-                (19.5, 1.12, 0.96, 1.02, 71502, 1.8, 0.00016),
-                (20.5, 1.00, 1.04, 0.98, 71503, 1.9, 0.00016),
-                (21.5, 1.08, 0.96, 1.02, 71504, 1.9, 0.00017),
+                (1.04, 1.04, 0.98, 71501, 1.8, 0.00015),
+                (1.12, 0.96, 1.02, 71502, 1.8, 0.00016),
+                (1.00, 1.04, 0.98, 71503, 1.9, 0.00016),
+                (1.08, 0.96, 1.02, 71504, 1.9, 0.00017),
             ],
         ),
         (
-            "movement_encoder_rack_grip_cross_repeat",
-            "repeat cross for encoder delay/filter/scale and rack/grip compliance",
+            "bar_kinematics_repeatability",
+            "same-load bar/LPT kinematics repeatability with independent measurement realizations",
             [
-                (18.5, 1.08, 1.04, 0.98, 71601, 1.5, 0.00018),
-                (19.5, 0.96, 0.96, 1.02, 71602, 1.5, 0.00018),
-                (20.5, 1.16, 1.04, 0.98, 71603, 1.6, 0.00019),
-                (21.5, 1.00, 0.96, 1.02, 71604, 1.6, 0.00019),
+                (1.08, 1.04, 0.98, 71601, 1.5, 0.00018),
+                (0.96, 0.96, 1.02, 71602, 1.5, 0.00018),
+                (1.16, 1.04, 0.98, 71603, 1.6, 0.00019),
+                (1.00, 0.96, 1.02, 71604, 1.6, 0.00019),
             ],
         ),
         (
-            "crossed_noise_repeats",
-            "deterministic noise repeats across crossed mechanics conditions",
+            "measurement_noise_repeats",
+            "deterministic measurement-realization repeats across same-load mechanics conditions",
             [
-                (18.5, 1.12, 0.96, 1.02, 71701, 1.3, 0.00013),
-                (19.5, 1.00, 1.04, 0.98, 71702, 1.3, 0.00013),
-                (20.5, 1.08, 0.96, 1.02, 71703, 1.3, 0.00014),
-                (21.5, 1.04, 1.04, 0.98, 71704, 1.3, 0.00014),
+                (1.12, 0.96, 1.02, 71701, 1.3, 0.00013),
+                (1.00, 1.04, 0.98, 71702, 1.3, 0.00013),
+                (1.08, 0.96, 1.02, 71703, 1.3, 0.00014),
+                (1.04, 1.04, 0.98, 71704, 1.3, 0.00014),
             ],
         ),
         (
-            "contact_timing_depth_cross",
-            "crossed contact excitation with depth and phase timing variation",
+            "contact_timing_depth_variants",
+            "same-load contact timing, depth, and phase-timing variation",
             [
-                (18.5, 1.16, 0.94, 1.04, 71801, 1.7, 0.00016),
-                (19.5, 1.08, 1.06, 0.96, 71802, 1.7, 0.00016),
-                (20.5, 0.96, 0.94, 1.04, 71803, 1.8, 0.00017),
-                (21.5, 1.04, 1.06, 0.96, 71804, 1.8, 0.00017),
+                (1.16, 0.94, 1.04, 71801, 1.7, 0.00016),
+                (1.08, 1.06, 0.96, 71802, 1.7, 0.00016),
+                (0.96, 0.94, 1.04, 71803, 1.8, 0.00017),
+                (1.04, 1.06, 0.96, 71804, 1.8, 0.00017),
             ],
         ),
     ]
@@ -485,15 +548,15 @@ def _validation_trial_specs() -> list[dict[str, Any]]:
                 "trial_id": f"validation_{trial_index:03d}",
                 "trial_group": group_name,
                 "family_focus": family_focus,
-                "bar_load_kg": row[0],
-                "depth_scale": row[1],
-                "braking_duration_scale": row[2],
-                "propulsion_duration_scale": row[3],
-                "noise_seed": row[4],
-                "force_noise_sd_N": row[5],
-                "bar_displacement_noise_sd_m": row[6],
+                "external_load_kg": PUBLIC_EXTERNAL_LOAD_KG,
+                "depth_scale": row[0],
+                "braking_duration_scale": row[1],
+                "propulsion_duration_scale": row[2],
+                "noise_seed": row[3],
+                "force_noise_sd_N": row[4],
+                "bar_displacement_noise_sd_m": row[5],
             }
-            if group_name == "crossed_noise_repeats":
+            if group_name == "measurement_noise_repeats":
                 spec["repeat_index"] = len([s for s in specs if s["trial_group"] == group_name]) + 1
             specs.append(spec)
     # Repeated active tuples are intentional noise repeats, never label-only
@@ -503,7 +566,7 @@ def _validation_trial_specs() -> list[dict[str, Any]]:
     for spec in specs:
         active = tuple(
             float(spec[key])
-            for key in ("bar_load_kg", "depth_scale", "braking_duration_scale", "propulsion_duration_scale")
+            for key in ("external_load_kg", "depth_scale", "braking_duration_scale", "propulsion_duration_scale")
         )
         by_active_tuple.setdefault(active, []).append(spec)
     repeat_number = 0
@@ -544,7 +607,9 @@ def _preprocessing_contract() -> dict[str, Any]:
             "quiet_force_sd": "Population standard deviation of Fz_total over the same final stable 1.00 s weighing window.",
         },
         "force_definitions": {
-            "Fz_total": "Force-plate total vertical force from both feet.",
+            "Fz_left": "Source-authoritative left force-platform vertical force in N.",
+            "Fz_right": "Source-authoritative right force-platform vertical force in N.",
+            "Fz_total": "Bilateral force-platform vertical force, defined as Fz_left + Fz_right in N.",
             "Fnet": "Fz_total - Wsys.",
             "msys": "Wsys / 9.81.",
         },
@@ -575,14 +640,13 @@ def _preprocessing_contract() -> dict[str, Any]:
             "interpretation": "LPT displacement and velocity are bar-only measurements and not COM measurements.",
             "bar_only_text": "bar-only, not COM",
         },
-        "excluded_variables": [
-            "RFD",
-            "time-to-peak",
-            "LPT acceleration",
-            "mixed FP force x LPT velocity power",
-            "LPT-as-COM",
-            "F0/V0/FV slope",
-        ],
+        "measurement_surface": {
+            "force_units": "N",
+            "bar_displacement_units": "m",
+            "bar_velocity_units": "m/s",
+            "force_aggregation": "fz_total_N equals fz_left_N + fz_right_N after deterministic resampling.",
+            "force_realization": "The declared total-force noise realization is apportioned across the physical left/right force traces before resampling so aggregation remains exact.",
+        },
     }
 
 
@@ -597,10 +661,18 @@ def _dataset_manifest() -> dict[str, Any]:
         },
         "public_trial_count": 6,
         "validation_trial_count": 32,
+        "public_external_load_kg": PUBLIC_EXTERNAL_LOAD_KG,
+        "identification_trial_ids": [spec["trial_id"] for spec in PUBLIC_TRIAL_SPECS],
+        "qualified_known_excitations": {
+            "synthetic_interlimb_drive_asymmetry_alpha": QUALIFIED_ASYMMETRY_ALPHA,
+        },
         "signal_keys": {
             "observations": OBSERVATION_KEYS,
             "observed_events": EVENT_KEYS,
             "observed_summary": SUMMARY_KEYS,
+        },
+        "optional_trial_sections": {
+            "bilateral_measurements": "Direct left/right braking and propulsive impulse diagnostics for the qualified known excitation.",
         },
         "generated_file_sha256": {},
     }
@@ -689,6 +761,9 @@ def _assert_trial_is_finite(trial: dict[str, Any]) -> None:
         for key, value in trial[section_name].items():
             if not isinstance(value, (int, float)) or isinstance(value, bool) or not math.isfinite(float(value)):
                 raise ValueError(f"{trial['trial_id']} nonfinite {section_name} {key}")
+    for key, value in trial.get("bilateral_measurements", {}).items():
+        if isinstance(value, (int, float)) and not isinstance(value, bool) and not math.isfinite(float(value)):
+            raise ValueError(f"{trial['trial_id']} nonfinite bilateral measurement {key}")
 
 
 def _write_json(path: Path, obj: dict[str, Any]) -> None:

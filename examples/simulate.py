@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def main() -> None:
     params = load_parameters(ROOT / "configs" / "synthetic_reference.json")
-    trial = load_trial("public_001", split="identification")
+    trial = load_trial("20kg_nominal_a", split="identification")
     result = simulate_trial(params, trial)
     print(json.dumps({
         "trial_id": trial["trial_id"],
@@ -28,4 +28,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

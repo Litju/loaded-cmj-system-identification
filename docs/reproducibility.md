@@ -21,6 +21,11 @@ The reproducible path is fixed by the following tracked inputs:
   public experiment fixtures;
 - `tools/generate_dataset.py`: deterministic fixture-generation implementation.
 
+The public experiment is `LCMJ_20KG_SYSID_V0.1.0`: every identification and
+validation descriptor has `external_load_kg = 20.0`. The source-authoritative
+athlete reference mass in `configs/synthetic_reference.json` is 78.37 kg. The
+comparison grid is 100 Hz from 0.00 s through 3.60 s inclusive.
+
 The generator records SHA-256 hashes in `data/dataset_manifest.json`. Generate
 into a scratch directory for an audit:
 
@@ -37,7 +42,7 @@ From the repository root:
 
 ```bash
 python -m pip install -e ".[dev]"
-pytest
+python -m pytest
 python examples/simulate.py
 python examples/identify.py
 python examples/validate.py
@@ -62,9 +67,9 @@ following contract:
 | --- | --- |
 | Compiled model counts | `nq=21`, `nv=21`, `nu=6`, `nbody=19`, `njnt=21`, `ngeom=28`, `nsite=26`, `ntendon=4`, `nsensor=10`, `npair=6`, `neq=0` |
 | Source/target plant | Same named bodies, joints, geoms, sites, actuators, sensors, tendons, solver settings, and critical physical arrays |
-| Public source-vs-target rollout audit | Six identification trials; maximum qpos/qvel, bilateral force, bar/LPT, and event-time differences were `0.0` in the recorded deterministic run; contact states were equal |
-| Validation fixtures | 32 public validation trials passed the finite-state, mechanics, contact/event, and measurement validity path |
-| Test suite | 16 tests pass without a source checkout; the optional source-equivalence test makes 17 tests pass when `LOADED_CMJ_SOURCE_ROOT` is supplied |
+| Public experiment | Six fixed-20 kg identification trials and 32 fixed-20 kg validation trials |
+| Bilateral measurement surface | Left/right force-platform channels are public; total force is their exact aggregate |
+| Test suite | The repository test suite covers model integrity, deterministic mechanics, fixed-load fixtures, bilateral aggregation, regeneration, fitting, validation, and rendering contracts |
 | Render artifact | 1280×720 MP4, 336 frames, 30 fps, 11.2 s, generated from the target plant with the MakeHuman visual family |
 
 These are source-port and numerical reproducibility results. They are not
@@ -77,19 +82,20 @@ The source checkout is deliberately external to this repository. Set its root
 at runtime and run the read-only harness:
 
 ```bash
-export LOADED_CMJ_SOURCE_ROOT=/path/to/source/loaded-cmj-forceplate-lpt-sysid
+export LOADED_CMJ_SOURCE_ROOT=/path/to/clean/source-authority
 python tools/equivalence_harness.py \
   --source-root "$LOADED_CMJ_SOURCE_ROOT" \
-  --trial-id public_001 \
+  --trial-id 20kg_nominal_a \
   --tolerance 1e-12
-LOADED_CMJ_SOURCE_ROOT="$LOADED_CMJ_SOURCE_ROOT" pytest -q
+LOADED_CMJ_SOURCE_ROOT="$LOADED_CMJ_SOURCE_ROOT" python -m pytest -q
 ```
 
 The harness compares compiled-model structure and critical arrays, qpos/qvel,
 bilateral force-platform channels, bar/LPT channels, contact states, and event
 timing. It does not copy source files, write into the source checkout, or place
-comparison dumps in the tracked tree. Repeat the command for
-`public_002` through `public_006` for the complete public-trial audit.
+comparison dumps in the tracked tree. Use it only with a clean committed source
+snapshot; the public release itself is qualified by the fixed-load regression
+and deterministic regeneration tests.
 
 Without `LOADED_CMJ_SOURCE_ROOT`, the source-equivalence test is skipped by
 design; that is an unavailable external evidence source, not a passing
@@ -107,4 +113,3 @@ equivalence claim.
 - Generated PNGs and MP4s are derived artifacts. Their provenance is recorded
   in `media/render_provenance.json` for the rendered presentation; the plotting
   script itself uses one authoritative rollout for all figures.
-

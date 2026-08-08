@@ -14,12 +14,14 @@ from loaded_cmj.simulation import simulate_trial
 from loaded_cmj.validation import validate_trial
 
 params = load_named_parameters("synthetic_reference")
-trial = load_trial("public_001", split="identification")
+trial = load_trial("20kg_nominal_a", split="identification")
 
 observations = preprocess_observations(trial["observations"])
 rollout = simulate_trial(params, trial, record=True)
 report = validate_trial(params, trial)
 
+print(rollout["traces"]["fz_left_N"])
+print(rollout["traces"]["fz_right_N"])
 print(rollout["traces"]["fz_total_N"])
 print(rollout["events"])
 print(report["trace_errors"])
@@ -120,4 +122,3 @@ loaded-cmj-render \
 Rendering is a presentation operation over a recorded plant rollout. The
 MakeHuman visual asset is posed from live MuJoCo landmarks; it is not stepped
 as a second physical model.
-

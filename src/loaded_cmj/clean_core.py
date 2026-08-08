@@ -1,8 +1,8 @@
-"""Deterministic MuJoCo plant primitives for the loaded-CMJ task.
+"""Deterministic MuJoCo plant primitives for the loaded-CMJ study.
 
 This module owns model compilation, data creation, reset, control writes,
-stepping, and observation-only telemetry.  It does not own the legacy CMJ
-controller, phase logic, scoring, datasets, or sensor models.
+stepping, and observation-only telemetry.  It does not own the CMJ controller,
+phase logic, datasets, or sensor models.
 """
 
 from __future__ import annotations

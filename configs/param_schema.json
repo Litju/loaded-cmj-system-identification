@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "loaded-cmj-forceplate-lpt-sysid params schema v2",
+  "title": "Loaded CMJ system-identification parameter schema v2",
   "type": "object",
   "additionalProperties": false,
   "required": [

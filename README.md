@@ -6,10 +6,12 @@
 
 ## Overview
 
-This project is a research-engineering port of a full-morphology
-loaded countermovement-jump (CMJ) system. It couples a linked sagittal human
-model, an externally loaded bar, bilateral force plates, and a bar-mounted
-linear-position transducer (LPT) measurement model in MuJoCo.
+Loaded CMJ System Identification in MuJoCo is a deterministic,
+mechanics-first system-identification study of a modeled loaded countermovement
+jump under a fixed 20 kg external load, using bilateral force-platform
+measurements and bar/LPT kinematics. It couples the full-fidelity linked
+sagittal human model, externally loaded bar, bilateral force plates, and
+bar-mounted linear-position transducer (LPT) measurement model in MuJoCo.
 
 The source XML and plant implementation are retained as the scientific
 authority. The public modules provide ordinary parameter loading, simulation,
@@ -20,6 +22,9 @@ rendering entry points around that plant.
 
 The intended presentation output is `media/loaded_cmj_demo.mp4`, with a static
 observable comparison in `media/observable_fit.png` when generated locally.
+The qualified bilateral condition is shown in
+`media/bilateral_force_asymmetry.png`, with left/right force traces in N,
+event markers, and direct side-specific impulses in N·s.
 `python examples/plot_observables.py` also writes separated dark-background
 figures for force-platform metrics, global/foot/joint kinematics, contact
 mechanics, phase timing, and scalar summaries, plus one single-axes combined
@@ -36,14 +41,25 @@ diagnostics.
 - [Open the rendered MP4](media/loaded_cmj_demo.mp4)
 - [Open the combined native-unit GRF/COM/LPT plot](media/combined_grf_com_lpt.png)
 - [Open the observable fit plot](media/observable_fit.png)
+- [Open the bilateral force qualification figure](media/bilateral_force_asymmetry.png)
 - [Read the visualization contract](docs/visualization.md)
 
-## Research question
+## Public experiment
 
-The synthetic experiment asks how well bounded parameter fitting can recover a
-loaded-CMJ plant from public force-platform and bar/LPT observations. It is a
-reproducible system-identification demonstration, not an experimental human
-validation study or a subject-specific digital twin.
+The release fixes every identification and validation trial at
+`external_load_kg = 20.0`. The six public identification conditions are:
+
+- `20kg_nominal_a` and `20kg_nominal_b`: identical mechanics with independent
+  deterministic measurement realizations;
+- `20kg_depth`: the validated countermovement-depth perturbation;
+- `20kg_timing`: the validated phase-timing perturbation;
+- `20kg_depth_timing`: the minimal same-load depth/timing combination; and
+- `20kg_bilateral_asymmetry`: a qualified synthetic inter-limb drive excitation.
+
+The final condition is a known experiment-layer excitation, not a clinical
+model, diagnosis, dominance estimate, or fitted identification coordinate.
+The project is a reproducible system-identification demonstration, not an
+experimental human-validation study or a subject-specific digital twin.
 
 ## Modeled loaded countermovement jump
 
@@ -55,8 +71,9 @@ leg torque actuators with the source phase-aware controller.
 
 ## Measurements
 
-The primary observed channels are bilateral vertical force-platform signals,
-their total/net force transforms, bar displacement, and bar velocity. The LPT
+The primary observed channels are left and right vertical force-platform
+signals, their exact bilateral total/net force transforms, bar displacement,
+and bar velocity. The LPT
 channel is explicitly the displacement of the loaded bar at the LPT site; it is
 not a center-of-mass displacement measurement. Filtering, delay, scaling,
 offset, the 100 Hz comparison grid, and the weighing/event rules are retained
@@ -87,8 +104,9 @@ python tools/generate_dataset.py --output-dir /tmp/loaded-cmj-generated
 ```
 
 The checked-in identification and validation trials are ordinary public
-fixtures. `configs/synthetic_reference.json` documents the parameter vector
-used to generate the synthetic reference observations.
+fixtures, all at 20 kg. `configs/synthetic_reference.json` documents the
+source-authoritative synthetic reference parameter vector used to generate the
+observations.
 
 ## Mechanics-first system identification
 
@@ -109,7 +127,7 @@ them to a single normalized grade.
 
 ```bash
 python -m pip install -e ".[dev]"
-pytest
+python -m pytest
 python examples/simulate.py
 python examples/identify.py
 python examples/validate.py
@@ -171,6 +189,9 @@ This is a synthetic research system. It does not establish experimental human
 validity, subject-specific physiological inference, or muscle-level physiology.
 The identified parameters have meaning within this MuJoCo plant and its
 measurement model.
+
+This release does not perform force-velocity profiling and does not estimate
+F0, V0, Pmax, or an F-V slope.
 
 ## Asset provenance and license
 
