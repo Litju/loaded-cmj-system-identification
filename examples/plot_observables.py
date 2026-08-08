@@ -40,9 +40,15 @@ SPINE = "#65717d"
 OBSERVED = "#8bdcff"
 MUJOCO = "#f4d35e"
 MUJOCO_DIM = "#d9bb4b"
+GRF_RIGHT_AMBER = "#f0a202"
+GRF_TOTAL_RED = "#ef476f"
+NET_GRF_PURPLE = "#c77dff"
+LPT_VELOCITY_GREEN = "#43aa8b"
+LPT_VELOCITY_OBSERVED = "#9fe5d0"
 COM_ORANGE = "#ff9f43"
-LPT_DISPLACEMENT_RED = "#ff4d6d"
-LPT_DISPLACEMENT_OBSERVED = "#ff9eae"
+LPT_DISPLACEMENT_MAGENTA = "#e056fd"
+LPT_DISPLACEMENT_OBSERVED = "#f3b5ff"
+LPT_TETHER_PURPLE = "#b388ff"
 EVENT = "#f2f2f2"
 PHASE_COLORS = (
     "#355070",  # weighing
@@ -273,32 +279,32 @@ def _combined_measurements(result: dict[str, Any], observed: dict[str, Any]) -> 
     )
 
     _prepare_axis(axes[0], result)
-    _plot_mujoco(axes[0], time_s, traces["fz_left_N"], "MuJoCo left Fz", linestyle="--", alpha=0.72)
-    _plot_mujoco(axes[0], time_s, traces["fz_right_N"], "MuJoCo right Fz", linestyle=":", alpha=0.72)
-    _plot_mujoco(axes[0], time_s, traces["fz_total_N"], "MuJoCo total Fz")
-    _plot_observed(axes[0], observed_time, observed["fz_total_N"], "observed total Fz")
+    _plot_mujoco(axes[0], time_s, traces["fz_left_N"], "MuJoCo left Fz", linestyle="--", alpha=0.72, color=MUJOCO)
+    _plot_mujoco(axes[0], time_s, traces["fz_right_N"], "MuJoCo right Fz", linestyle=":", alpha=0.72, color=GRF_RIGHT_AMBER)
+    _plot_mujoco(axes[0], time_s, traces["fz_total_N"], "MuJoCo total Fz", color=GRF_TOTAL_RED)
+    _plot_observed(axes[0], observed_time, observed["fz_total_N"], "observed total Fz", color=OBSERVED)
     _style_axis(axes[0], "Bilateral force-platform signal", "force (N)")
     _legend(axes[0], ncol=2)
 
     _prepare_axis(axes[1], result)
-    _plot_mujoco(axes[1], time_s, traces["fnet_N"], "MuJoCo net GRF")
+    _plot_mujoco(axes[1], time_s, traces["fnet_N"], "MuJoCo net GRF", color=NET_GRF_PURPLE)
     _style_axis(axes[1], "Net ground-reaction force", "net force (N)")
     _legend(axes[1])
 
     _prepare_axis(axes[2], result)
-    _plot_mujoco(axes[2], time_s, traces["bar_displacement_m"], "MuJoCo bar displacement")
-    _plot_observed(axes[2], observed_time, observed["bar_displacement_m"], "observed bar displacement")
+    _plot_mujoco(axes[2], time_s, traces["bar_displacement_m"], "MuJoCo bar displacement", color=LPT_DISPLACEMENT_MAGENTA)
+    _plot_observed(axes[2], observed_time, observed["bar_displacement_m"], "observed bar displacement", color=LPT_DISPLACEMENT_OBSERVED)
     _style_axis(axes[2], "Bar/LPT displacement — bar displacement, not COM displacement", "m")
     _legend(axes[2])
 
     _prepare_axis(axes[3], result)
-    _plot_mujoco(axes[3], time_s, traces["bar_velocity_m_s"], "MuJoCo bar velocity")
-    _plot_observed(axes[3], observed_time, observed["bar_velocity_m_s"], "observed bar velocity")
+    _plot_mujoco(axes[3], time_s, traces["bar_velocity_m_s"], "MuJoCo bar velocity", color=LPT_VELOCITY_GREEN)
+    _plot_observed(axes[3], observed_time, observed["bar_velocity_m_s"], "observed bar velocity", color=LPT_VELOCITY_OBSERVED)
     _style_axis(axes[3], "Bar/LPT velocity", "velocity (m/s)")
     _legend(axes[3], loc="lower right")
 
     _prepare_axis(axes[4], result, labels=True)
-    _plot_mujoco(axes[4], time_s, traces["lpt_tether_force_N"], "MuJoCo LPT tether force")
+    _plot_mujoco(axes[4], time_s, traces["lpt_tether_force_N"], "MuJoCo LPT tether force", color=LPT_TETHER_PURPLE)
     _style_axis(axes[4], "LPT tether diagnostic", "force (N)")
     axes[4].set_xlabel("time (s)", color=TEXT)
     _legend(axes[4], loc="lower right")
@@ -331,21 +337,21 @@ def _combined_grf_com_lpt(result: dict[str, Any], observed: dict[str, Any]) -> N
     displacement_axis.spines["right"].set_position(("outward", 124))
 
     _prepare_axis(host, result, labels=True)
-    _plot_mujoco(host, time_s, traces["fz_left_N"], "MuJoCo left GRF", linestyle="--", alpha=0.72)
-    _plot_mujoco(host, time_s, traces["fz_right_N"], "MuJoCo right GRF", linestyle=":", alpha=0.72)
-    _plot_mujoco(host, time_s, traces["fz_total_N"], "MuJoCo total GRF")
-    _plot_observed(host, observed_time, observed["fz_total_N"], "observed total GRF")
+    _plot_mujoco(host, time_s, traces["fz_left_N"], "MuJoCo left GRF", linestyle="--", alpha=0.72, color=MUJOCO)
+    _plot_mujoco(host, time_s, traces["fz_right_N"], "MuJoCo right GRF", linestyle=":", alpha=0.72, color=GRF_RIGHT_AMBER)
+    _plot_mujoco(host, time_s, traces["fz_total_N"], "MuJoCo total GRF", color=GRF_TOTAL_RED)
+    _plot_observed(host, observed_time, observed["fz_total_N"], "observed total GRF", color=OBSERVED)
     _style_axis(host, "Force-platform GRFs + COM + LPT (native scales)", "GRF (N)")
 
     _plot_mujoco(com_axis, time_s, traces["com_z_m"], "MuJoCo COM z", color=COM_ORANGE)
-    _plot_mujoco(velocity_axis, time_s, traces["bar_velocity_m_s"], "MuJoCo LPT/bar velocity")
-    _plot_observed(velocity_axis, observed_time, observed["bar_velocity_m_s"], "observed LPT/bar velocity")
+    _plot_mujoco(velocity_axis, time_s, traces["bar_velocity_m_s"], "MuJoCo LPT/bar velocity", color=LPT_VELOCITY_GREEN)
+    _plot_observed(velocity_axis, observed_time, observed["bar_velocity_m_s"], "observed LPT/bar velocity", color=LPT_VELOCITY_OBSERVED)
     _plot_mujoco(
         displacement_axis,
         time_s,
         traces["bar_displacement_m"],
         "MuJoCo LPT/bar displacement",
-        color=LPT_DISPLACEMENT_RED,
+        color=LPT_DISPLACEMENT_MAGENTA,
     )
     _plot_observed(
         displacement_axis,
@@ -358,8 +364,8 @@ def _combined_grf_com_lpt(result: dict[str, Any], observed: dict[str, Any]) -> N
     for axis, label, color in (
         (host, "GRF (N)", TEXT),
         (com_axis, "COM z (m)", COM_ORANGE),
-        (velocity_axis, "LPT velocity (m/s)", OBSERVED),
-        (displacement_axis, "LPT displacement (m)", LPT_DISPLACEMENT_RED),
+        (velocity_axis, "LPT velocity (m/s)", LPT_VELOCITY_GREEN),
+        (displacement_axis, "LPT displacement (m)", LPT_DISPLACEMENT_MAGENTA),
     ):
         axis.set_ylabel(label, color=color)
         axis.tick_params(axis="y", colors=color, labelsize=8)
@@ -408,33 +414,39 @@ def _force_plate_metrics(result: dict[str, Any]) -> None:
     fig.suptitle("Loaded CMJ force-platform metrics", color=TEXT, fontsize=14, fontweight="bold")
 
     _prepare_axis(axes[0], result)
-    _plot_mujoco(axes[0], time_s, traces["fz_left_N"], "MuJoCo left plate", linestyle="--", alpha=0.72)
-    _plot_mujoco(axes[0], time_s, traces["fz_right_N"], "MuJoCo right plate", linestyle=":", alpha=0.72)
-    _plot_mujoco(axes[0], time_s, traces["fz_total_N"], "MuJoCo bilateral total")
-    _plot_mujoco(axes[0], time_s, traces["total_fz_N"], "MuJoCo raw contact total", linestyle="-.", alpha=0.68)
+    _plot_mujoco(axes[0], time_s, traces["fz_left_N"], "MuJoCo left plate", linestyle="--", alpha=0.72, color=MUJOCO)
+    _plot_mujoco(axes[0], time_s, traces["fz_right_N"], "MuJoCo right plate", linestyle=":", alpha=0.72, color=GRF_RIGHT_AMBER)
+    _plot_mujoco(axes[0], time_s, traces["fz_total_N"], "MuJoCo bilateral total", color=GRF_TOTAL_RED)
+    _plot_mujoco(axes[0], time_s, traces["total_fz_N"], "MuJoCo raw contact total", linestyle="-.", alpha=0.68, color=LPT_TETHER_PURPLE)
     _style_axis(axes[0], "Bilateral vertical force plates", "force (N)")
     _legend(axes[0], ncol=3)
 
     _prepare_axis(axes[1], result)
-    for key in (
+    regional_fz_colors = (
+        MUJOCO, GRF_RIGHT_AMBER, "#ff6b6b", "#4cc9f0", LPT_VELOCITY_GREEN, LPT_TETHER_PURPLE,
+    )
+    for key, color in zip((
         "left_heel_fz_N", "left_forefoot_fz_N", "left_toe_fz_N",
         "right_heel_fz_N", "right_forefoot_fz_N", "right_toe_fz_N",
-    ):
-        _plot_mujoco(axes[1], time_s, traces[key], f"MuJoCo {key.removesuffix('_fz_N')}", alpha=0.78)
+    ), regional_fz_colors):
+        _plot_mujoco(axes[1], time_s, traces[key], f"MuJoCo {key.removesuffix('_fz_N')}", alpha=0.78, color=color)
     _style_axis(axes[1], "Regional vertical contact forces", "force (N)")
     _legend(axes[1], ncol=3)
 
     _prepare_axis(axes[2], result)
-    for key in (
+    regional_fx_colors = (
+        COM_ORANGE, LPT_DISPLACEMENT_MAGENTA, "#00b4d8", "#90be6d", "#577590", "#f8961e",
+    )
+    for key, color in zip((
         "left_heel_fx_N", "left_forefoot_fx_N", "left_toe_fx_N",
         "right_heel_fx_N", "right_forefoot_fx_N", "right_toe_fx_N",
-    ):
-        _plot_mujoco(axes[2], time_s, traces[key], f"MuJoCo {key.removesuffix('_fx_N')}", alpha=0.78)
+    ), regional_fx_colors):
+        _plot_mujoco(axes[2], time_s, traces[key], f"MuJoCo {key.removesuffix('_fx_N')}", alpha=0.78, color=color)
     _style_axis(axes[2], "Regional horizontal contact forces", "force (N)")
     _legend(axes[2], ncol=3)
 
     _prepare_axis(axes[3], result, labels=True)
-    _plot_mujoco(axes[3], time_s, traces["total_fx_N"], "MuJoCo total Fx")
+    _plot_mujoco(axes[3], time_s, traces["total_fx_N"], "MuJoCo total Fx", color="#00b4d8")
     _style_axis(axes[3], "Total horizontal force-plate signal", "force (N)")
     axes[3].set_xlabel("time (s)", color=TEXT)
     _legend(axes[3], loc="lower right")
@@ -449,27 +461,27 @@ def _global_kinematics(result: dict[str, Any]) -> None:
     fig.suptitle("Loaded CMJ global kinematics", color=TEXT, fontsize=14, fontweight="bold")
 
     _prepare_axis(axes[0], result)
-    _plot_mujoco(axes[0], time_s, traces["root_x_m"], "MuJoCo pelvis/root x", linestyle="--")
-    _plot_mujoco(axes[0], time_s, traces["com_x_m"], "MuJoCo COM x")
+    _plot_mujoco(axes[0], time_s, traces["root_x_m"], "MuJoCo pelvis/root x", linestyle="--", color=MUJOCO)
+    _plot_mujoco(axes[0], time_s, traces["com_x_m"], "MuJoCo COM x", color=COM_ORANGE)
     _style_axis(axes[0], "Horizontal position", "position (m)")
     _legend(axes[0])
 
     _prepare_axis(axes[1], result)
-    _plot_mujoco(axes[1], time_s, traces["root_z_m"], "MuJoCo pelvis/root z", linestyle="--")
-    _plot_mujoco(axes[1], time_s, traces["com_z_m"], "MuJoCo COM z")
+    _plot_mujoco(axes[1], time_s, traces["root_z_m"], "MuJoCo pelvis/root z", linestyle="--", color=LPT_VELOCITY_GREEN)
+    _plot_mujoco(axes[1], time_s, traces["com_z_m"], "MuJoCo COM z", color=COM_ORANGE)
     _style_axis(axes[1], "Vertical position", "position (m)")
     _legend(axes[1])
 
     _prepare_axis(axes[2], result)
-    _plot_mujoco(axes[2], time_s, traces["bar_z_m"], "MuJoCo bar z", linestyle="--")
-    _plot_mujoco(axes[2], time_s, traces["bar_displacement_m"], "MuJoCo bar displacement")
+    _plot_mujoco(axes[2], time_s, traces["bar_z_m"], "MuJoCo bar z", linestyle="--", color=GRF_RIGHT_AMBER)
+    _plot_mujoco(axes[2], time_s, traces["bar_displacement_m"], "MuJoCo bar displacement", color=LPT_DISPLACEMENT_MAGENTA)
     _style_axis(axes[2], "Loaded bar position channels", "position (m)")
     _legend(axes[2])
 
     _prepare_axis(axes[3], result, labels=True)
-    _plot_mujoco(axes[3], time_s, traces["root_x_velocity_m_s"], "MuJoCo root x velocity", linestyle="--")
-    _plot_mujoco(axes[3], time_s, traces["root_z_velocity_m_s"], "MuJoCo root z velocity", linestyle=":")
-    _plot_mujoco(axes[3], time_s, traces["bar_velocity_m_s"], "MuJoCo bar velocity")
+    _plot_mujoco(axes[3], time_s, traces["root_x_velocity_m_s"], "MuJoCo root x velocity", linestyle="--", color=MUJOCO)
+    _plot_mujoco(axes[3], time_s, traces["root_z_velocity_m_s"], "MuJoCo root z velocity", linestyle=":", color=GRF_RIGHT_AMBER)
+    _plot_mujoco(axes[3], time_s, traces["bar_velocity_m_s"], "MuJoCo bar velocity", color=LPT_VELOCITY_GREEN)
     _style_axis(axes[3], "Global velocities", "velocity (m/s)")
     axes[3].set_xlabel("time (s)", color=TEXT)
     _legend(axes[3], ncol=3, loc="lower right")
@@ -484,16 +496,20 @@ def _foot_kinematics(result: dict[str, Any]) -> None:
     fig.suptitle("Loaded CMJ foot kinematics", color=TEXT, fontsize=14, fontweight="bold")
 
     _prepare_axis(axes[0], result)
-    for key in (
+    foot_height_colors = (
+        MUJOCO, GRF_RIGHT_AMBER, COM_ORANGE,
+        LPT_VELOCITY_GREEN, "#4cc9f0", LPT_TETHER_PURPLE,
+    )
+    for key, color in zip((
         "left_heel_z_m", "left_forefoot_z_m", "left_toe_z_m",
         "right_heel_z_m", "right_forefoot_z_m", "right_toe_z_m",
-    ):
-        _plot_mujoco(axes[0], time_s, traces[key], f"MuJoCo {key.removesuffix('_z_m')}", alpha=0.78)
+    ), foot_height_colors):
+        _plot_mujoco(axes[0], time_s, traces[key], f"MuJoCo {key.removesuffix('_z_m')}", alpha=0.78, color=color)
     _style_axis(axes[0], "Foot landmark heights", "height (m)")
     _legend(axes[0], ncol=3)
 
     _prepare_axis(axes[1], result, labels=True)
-    _plot_mujoco(axes[1], time_s, traces["foot_clearance_m"], "MuJoCo minimum foot clearance")
+    _plot_mujoco(axes[1], time_s, traces["foot_clearance_m"], "MuJoCo minimum foot clearance", color="#00b4d8")
     _style_axis(axes[1], "Minimum bilateral foot clearance", "clearance (m)")
     axes[1].set_xlabel("time (s)", color=TEXT)
     _legend(axes[1])
@@ -554,10 +570,20 @@ def _joint_kinematics(result: dict[str, Any]) -> None:
     fig, axes = plt.subplots(4, 1, figsize=(14, 14.5), sharex=True, constrained_layout=True)
     fig.suptitle("Loaded CMJ joint kinematics — q and qdot", color=TEXT, fontsize=14, fontweight="bold")
     groups = position_groups + velocity_groups
+    anatomical_colors = (
+        MUJOCO, GRF_RIGHT_AMBER, COM_ORANGE, LPT_DISPLACEMENT_MAGENTA,
+        LPT_VELOCITY_GREEN, "#4cc9f0", LPT_TETHER_PURPLE, "#f72585",
+        "#90be6d", "#577590", "#f9844a",
+    )
+    articulation_colors = (
+        MUJOCO, GRF_RIGHT_AMBER, COM_ORANGE, LPT_DISPLACEMENT_MAGENTA,
+        LPT_VELOCITY_GREEN, "#4cc9f0", LPT_TETHER_PURPLE,
+    )
     for index, (title, channels) in enumerate(groups):
         _prepare_axis(axes[index], result, labels=index == len(groups) - 1)
-        for channel, label in channels:
-            _plot_mujoco(axes[index], time_s, traces[channel], f"MuJoCo {label}", alpha=0.78)
+        colors = anatomical_colors if index in (0, 2) else articulation_colors
+        for (channel, label), color in zip(channels, colors):
+            _plot_mujoco(axes[index], time_s, traces[channel], f"MuJoCo {label}", alpha=0.78, color=color)
         ylabel = "q (rad; bar translations m)" if index < 2 else "qdot (rad/s; bar translations m/s)"
         _style_axis(axes[index], title, ylabel)
         _legend(
@@ -577,24 +603,28 @@ def _contact_mechanics(result: dict[str, Any]) -> None:
     fig.suptitle("Loaded CMJ contact and force-platform mechanics", color=TEXT, fontsize=14, fontweight="bold")
 
     _prepare_axis(axes[0], result)
-    for key in (
+    contact_colors = (
+        MUJOCO, GRF_RIGHT_AMBER, COM_ORANGE,
+        LPT_VELOCITY_GREEN, "#4cc9f0", LPT_TETHER_PURPLE,
+    )
+    for key, color in zip((
         "left_heel_contact", "left_forefoot_contact", "left_toe_contact",
         "right_heel_contact", "right_forefoot_contact", "right_toe_contact",
-    ):
-        _plot_mujoco(axes[0], time_s, [int(value) for value in traces[key]], f"MuJoCo {key.removesuffix('_contact')}", alpha=0.78)
+    ), contact_colors):
+        _plot_mujoco(axes[0], time_s, [int(value) for value in traces[key]], f"MuJoCo {key.removesuffix('_contact')}", alpha=0.78, color=color)
     axes[0].set_ylim(-0.08, 1.08)
     axes[0].set_yticks((0, 1), labels=("off", "on"))
     _style_axis(axes[0], "Per-region contact state", "contact")
     _legend(axes[0], ncol=3)
 
     _prepare_axis(axes[1], result)
-    _plot_mujoco(axes[1], time_s, traces["cop_x_m"], "MuJoCo center of pressure x")
+    _plot_mujoco(axes[1], time_s, traces["cop_x_m"], "MuJoCo center of pressure x", color="#00b4d8")
     _style_axis(axes[1], "Force-platform center of pressure", "CoP x (m)")
     _legend(axes[1])
 
     _prepare_axis(axes[2], result, labels=True)
-    _plot_mujoco(axes[2], time_s, traces["left_slip_vx_m_s"], "MuJoCo left slip speed", linestyle="--")
-    _plot_mujoco(axes[2], time_s, traces["right_slip_vx_m_s"], "MuJoCo right slip speed")
+    _plot_mujoco(axes[2], time_s, traces["left_slip_vx_m_s"], "MuJoCo left slip speed", linestyle="--", color=COM_ORANGE)
+    _plot_mujoco(axes[2], time_s, traces["right_slip_vx_m_s"], "MuJoCo right slip speed", color=LPT_TETHER_PURPLE)
     _style_axis(axes[2], "Contact slip diagnostics", "speed (m/s)")
     axes[2].set_xlabel("time (s)", color=TEXT)
     _legend(axes[2], loc="lower right")
